@@ -18,40 +18,39 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-
-- name: Install Node.js
-  uses: actions/setup-node@v3
-  with:
-    node-version: '16'
-    cache: 'npm'
-
-- name: Install dependencies
-  run: npm install
-
-- name: Build React app
-  run: npm run build
-
-- name: Prepare web directory
-  run: |
-    # Create web directory
-    mkdir -p web
+    - name: Install Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16'
+        cache: 'npm'
     
-    # Copy build files to web directory
-    cp -r build/* web/
+    - name: Install dependencies
+      run: npm install
     
-    # Copy paper features maintaining directory structure
-    mkdir -p web/data
-    cp data/papers/papers.json web/data/
+    - name: Build React app
+      run: npm run build
     
-    cd data
-    if [ -d "papers" ]; then
-      # Create papers directory in web/data
-      mkdir -p ../web/data/papers
-      
-      # Find all markdown files under papers/*/features
-      # and copy them maintaining directory structure
-      find papers -type f -name "*.md" -path "*/features/*" -exec cp --parents {} ../web/data/ \;
-    fi
-    cd ..
-    
-    touch web/.nojekyll
+    - name: Prepare web directory
+      run: |
+        # Create web directory
+        mkdir -p web
+        
+        # Copy build files to web directory
+        cp -r build/* web/
+        
+        # Copy paper features maintaining directory structure
+        mkdir -p web/data
+        cp data/papers/papers.json web/data/
+        
+        cd data
+        if [ -d "papers" ]; then
+          # Create papers directory in web/data
+          mkdir -p ../web/data/papers
+          
+          # Find all markdown files under papers/*/features
+          # and copy them maintaining directory structure
+          find papers -type f -name "*.md" -path "*/features/*" -exec cp --parents {} ../web/data/ \;
+        fi
+        cd ..
+        
+        touch web/.nojekyll
