@@ -1,0 +1,57 @@
+name: Build Frontend-New
+
+on:
+  push:
+    paths:
+      - 'frontend-new/**'
+      - '.github/workflows/build-extension.yml'
+    branches: [ main, ext-use-gh-store ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend-new
+
+    steps:
+    - uses: actions/checkout@v4
+    
+
+- name: Install Node.js
+  uses: actions/setup-node@v3
+  with:
+    node-version: '16'
+    cache: 'npm'
+
+- name: Install dependencies
+  run: npm install
+
+- name: Build React app
+  run: npm run build
+
+- name: Prepare web directory
+  run: |
+    # Create web directory
+    mkdir -p web
+    
+    # Copy build files to web directory
+    cp -r build/* web/
+    
+    # Copy paper features maintaining directory structure
+    mkdir -p web/data
+    cp data/papers/papers.json web/data/
+    
+    cd data
+    if [ -d "papers" ]; then
+      # Create papers directory in web/data
+      mkdir -p ../web/data/papers
+      
+      # Find all markdown files under papers/*/features
+      # and copy them maintaining directory structure
+      find papers -type f -name "*.md" -path "*/features/*" -exec cp --parents {} ../web/data/ \;
+    fi
+    cd ..
+    
+    touch web/.nojekyll
