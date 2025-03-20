@@ -2,9 +2,9 @@ name: Deploy Frontend
 
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - 'data/papers/gh-store-snapshot.json'
+  # push:
+  #   paths:
+  #     - 'data/papers/gh-store-snapshot.json'
 
 concurrency:
   group: store-deploy
@@ -49,26 +49,26 @@ jobs:
           python-version: '3.12'
           cache: 'pip'
           
-      - name: Install dependencies
-        run: pip install gh-store
+      # - name: Install dependencies
+      #   run: pip install gh-store
 
-      - name: Update snapshot
-        env:
-          SNAPSHOT_PATH: data/papers/gh-store-snapshot.json
-        run: |
-          mkdir -p $(dirname ${{ env.SNAPSHOT_PATH }})
-          python -m gh_store update-snapshot \
-            --token ${{ secrets.GITHUB_TOKEN }} \
-            --repo ${{ github.repository }} \
-            --snapshot-path ${{ env.SNAPSHOT_PATH }}
+      # - name: Update snapshot
+      #   env:
+      #     SNAPSHOT_PATH: data/papers/gh-store-snapshot.json
+      #   run: |
+      #     mkdir -p $(dirname ${{ env.SNAPSHOT_PATH }})
+      #     python -m gh_store update-snapshot \
+      #       --token ${{ secrets.GITHUB_TOKEN }} \
+      #       --repo ${{ github.repository }} \
+      #       --snapshot-path ${{ env.SNAPSHOT_PATH }}
       
-      - name: Convert data
-        run: |
-          python frontend/scripts/convert_store.py \
-            --snapshot_path data/papers/gh-store-snapshot.json \
-            --output_path data/papers/papers.json \
-            --archive_path data/papers/papers-archive.json \
-            --features_base data/papers
+      # - name: Convert data
+      #   run: |
+      #     python frontend/scripts/convert_store.py \
+      #       --snapshot_path data/papers/gh-store-snapshot.json \
+      #       --output_path data/papers/papers.json \
+      #       --archive_path data/papers/papers-archive.json \
+      #       --features_base data/papers
 
       - name: Upload papers.json
         uses: actions/upload-artifact@v4
