@@ -9,7 +9,7 @@ import serve from 'rollup-plugin-serve';
 import livereload from 'rollup-plugin-livereload';
 
 const production = !process.env.ROLLUP_WATCH;
-const baseUrl = production ? '/hello-world-mantine/' : '/';
+const baseUrl = production ? '/papers-feed-frontend-dev/' : '/';
 
 export default {
   input: 'src/main.jsx',
