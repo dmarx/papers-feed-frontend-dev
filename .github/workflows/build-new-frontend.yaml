@@ -36,26 +36,22 @@ jobs:
       
       - name: Install Dependencies
         run: |
-          cd frontend-new
           npm install
       
       - name: Run Tests
         run: |
-          cd frontend-new
           npm test
       
       - name: Build
         run: |
-          cd frontend-new
           npm run build
       
       - name: Copy public files to dist
         run: |
-          cd frontend-new
           cp -r public/* dist/
       
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: frontend-new/dist
+          folder: dist
           branch: gh-pages
