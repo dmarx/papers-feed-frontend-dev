@@ -46,9 +46,9 @@ jobs:
         run: |
           npm run build
       
-      - name: Copy public files to dist
-        run: |
-          cp -r public/* dist/
+      # - name: Copy public files to dist
+      #   run: |
+      #     cp -r public/* dist/
       
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
