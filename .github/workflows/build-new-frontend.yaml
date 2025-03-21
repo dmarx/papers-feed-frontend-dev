@@ -25,6 +25,8 @@ jobs:
             rm -f package-lock.json
           fi
           npm install --package-lock-only --no-audit
+          echo pwd
+          echo ls -ha
           
       - name: Setup Node.js
         uses: actions/setup-node@v4
