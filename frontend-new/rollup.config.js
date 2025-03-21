@@ -21,7 +21,7 @@ export default {
   plugins: [
     replace({
       'process.env.NODE_ENV': JSON.stringify(production ? 'production' : 'development'),
-      'preventAssignment': true
+      preventAssignment: true
     }),
     postcss({
       extract: 'bundle.css'
@@ -47,7 +47,7 @@ export default {
       port: 3000
     }),
     !production && livereload('dist')
-  ],
+  ].filter(Boolean),
   watch: {
     clearScreen: false
   }
