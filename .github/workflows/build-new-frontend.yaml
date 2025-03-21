@@ -57,14 +57,14 @@ jobs:
           npm run build
           ls -ha
       
-      # - name: Copy public files to dist
-      #   run: |
-      #     cp -r public/* dist/
+      - name: Copy public files to dist
+        run: |
+          cp -r frontend-new/dist/ dist/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./frontend-new/dist
+          path: ./dist
       
       - name: Deploy to GitHub Pages
         id: deployment
