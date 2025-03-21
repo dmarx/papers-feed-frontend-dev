@@ -1,56 +1,49 @@
-name: Build Frontend-New
+# .github/workflows/deploy-frontend.yml
+name: Deploy to GitHub Pages
 
 on:
   push:
-    paths:
-      - 'frontend-new/**'
-      - '.github/workflows/build-extension.yml'
-    branches: [ main, ext-use-gh-store ]
+    branches: [ main ]
+  
+  # Allow manual trigger
   workflow_dispatch:
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend-new
-
+    
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Install Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '16'
-        #cache: 'npm'
-    
-    - name: Install dependencies
-      run: npm install
-    
-    - name: Build React app
-      run: npm run build
-    
-    - name: Prepare web directory
-      run: |
-        # Create web directory
-        mkdir -p web
-        
-        # Copy build files to web directory
-        cp -r build/* web/
-        
-        # Copy paper features maintaining directory structure
-        mkdir -p web/data
-        cp data/papers/papers.json web/data/
-        
-        cd data
-        if [ -d "papers" ]; then
-          # Create papers directory in web/data
-          mkdir -p ../web/data/papers
-          
-          # Find all markdown files under papers/*/features
-          # and copy them maintaining directory structure
-          find papers -type f -name "*.md" -path "*/features/*" -exec cp --parents {} ../web/data/ \;
-        fi
-        cd ..
-        
-        touch web/.nojekyll
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install Dependencies
+        run: |
+          cd frontend-new
+          npm install
+      
+      - name: Run Tests
+        run: |
+          cd frontend-new
+          npm test
+      
+      - name: Build
+        run: |
+          cd frontend-new
+          npm run build
+      
+      - name: Copy public files to dist
+        run: |
+          cd frontend-new
+          cp -r public/* dist/
+      
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: frontend-new/dist
+          branch: gh-pages
