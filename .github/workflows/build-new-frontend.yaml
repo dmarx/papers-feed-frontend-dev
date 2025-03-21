@@ -25,7 +25,7 @@ jobs:
             rm -f package-lock.json
           fi
           npm install --package-lock-only --no-audit
-          echo pwd
+          echo $("pwd")
           echo ls -ha
           
       - name: Setup Node.js
