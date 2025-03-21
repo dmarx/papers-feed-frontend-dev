@@ -15,7 +15,7 @@ permissions:
   actions: read
 
 jobs:
-  build-and-deploy:
+  build-and-deploy-new-frontend:
     runs-on: ubuntu-latest
     #defaults:
     #  run:
