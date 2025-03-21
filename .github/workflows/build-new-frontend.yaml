@@ -15,7 +15,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      
+
+      - name: Regenerate package-lock.json
+        run: |
+          if [ -f "package-lock.json" ]; then
+            rm -f package-lock.json
+          fi
+          npm install --package-lock-only --no-audit
+          
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
