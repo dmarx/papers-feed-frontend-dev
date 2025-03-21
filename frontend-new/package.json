@@ -1,68 +1,31 @@
 {
-  "name": "arxiv-paper-feed",
+  "name": "hello-world-mantine",
   "version": "0.1.0",
   "private": true,
-  "dependencies": {
-    "@emotion/react": "^11.11.0",
-    "@mantine/core": "^6.0.13",
-    "@mantine/dates": "^6.0.13",
-    "@mantine/hooks": "^6.0.13",
-    "@mantine/notifications": "^6.0.13",
-    "@tabler/icons-react": "^2.20.0",
-    "@tanstack/react-query": "^4.29.15",
-    "@tanstack/react-query-devtools": "^4.29.15",
-    "@types/marked": "^4.0.8",
-    "@types/node": "^16.18.12",
-    "@types/react": "^18.0.28",
-    "@types/react-dom": "^18.0.11",
-    "dayjs": "^1.11.8",
-    "fuse.js": "^6.6.2",
-    "github-markdown-css": "^5.2.0",
-    "marked": "^4.2.12",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1",
-    "typescript": "^4.9.5"
-  },
   "scripts": {
+    "dev": "rollup -c -w",
     "build": "rollup -c",
-    "watch": "rollup -c -w",
-    "type-check": "tsc --noEmit",
-    "lint": "eslint . --ext .ts",
-    "format": "prettier --write \"**/*.{ts,js}\"",
-    "clean": "rm -rf dist"
+    "test": "echo \"No tests yet\""
   },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+  "dependencies": {
+    "@mantine/core": "^7.5.0",
+    "@mantine/hooks": "^7.5.0",
+    "@tanstack/react-query": "^5.22.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^22.0.0",
-    "@rollup/plugin-node-resolve": "^13.3.0",
-    "@rollup/plugin-typescript": "^8.3.2",
-    "@types/chrome": "^0.0.246",
-    "@types/node": "^20.10.6",
-    "@typescript-eslint/eslint-plugin": "^6.17.0",
-    "@typescript-eslint/parser": "^6.17.0",
-    "eslint": "^8.56.0",
-    "prettier": "^3.1.1",
-    "rollup": "^2.75.6",
-    "rollup-plugin-terser": "^7.0.2",
-    "tslib": "^2.4.0",
-    "typescript": "^5.3.3"
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-replace": "^5.0.5",
+    "@rollup/plugin-terser": "^0.4.4",
+    "rollup": "^4.9.6",
+    "rollup-plugin-livereload": "^2.0.5",
+    "rollup-plugin-postcss": "^4.0.2",
+    "rollup-plugin-serve": "^2.0.2",
+    "@rollup/plugin-babel": "^6.0.4",
+    "@babel/core": "^7.23.7",
+    "@babel/preset-env": "^7.23.8",
+    "@babel/preset-react": "^7.23.3"
   }
 }
