@@ -17,9 +17,9 @@ permissions:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend-new
+    #defaults:
+    #  run:
+    #    working-directory: frontend-new
         
     steps:
       - name: Checkout
@@ -27,6 +27,7 @@ jobs:
 
       - name: Regenerate package-lock.json
         run: |
+          cd frontend-new
           if [ -f "package-lock.json" ]; then
             rm -f package-lock.json
           fi
@@ -42,14 +43,17 @@ jobs:
       
       - name: Install Dependencies
         run: |
+          cd frontend-new
           npm install
       
       - name: Run Tests
         run: |
+          cd frontend-new
           npm test
       
       - name: Build
         run: |
+          cd frontend-new
           npm run build
       
       # - name: Copy public files to dist
@@ -60,5 +64,5 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./web
+          publish_dir: ./frontend-new/web
           force_orphan: true
