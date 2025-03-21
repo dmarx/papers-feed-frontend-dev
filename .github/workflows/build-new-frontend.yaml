@@ -56,15 +56,22 @@ jobs:
           cd frontend-new
           npm run build
           ls -ha
-      
+        
       - name: Copy public files to dist
         run: |
-          cp -r frontend-new/dist/ dist/
-
+          cd frontend-new
+          mkdir -p dist
+          cp -r public/* dist/
+          ls -la dist/
+      
+      # Configure GitHub Pages
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+      
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./dist
+          path: ./frontend-new/dist
       
       - name: Deploy to GitHub Pages
         id: deployment
