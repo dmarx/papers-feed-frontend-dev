@@ -55,6 +55,7 @@ jobs:
         run: |
           cd frontend-new
           npm run build
+          ls -ha
       
       # - name: Copy public files to dist
       #   run: |
@@ -64,5 +65,5 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./frontend-new/web
+          publish_dir: ./web
           force_orphan: true
