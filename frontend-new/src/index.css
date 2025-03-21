@@ -1,0 +1,41 @@
+/* src/index.css */
+body {
+  margin: 0;
+}
+
+/* Markdown styling */
+.markdown-body {
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.markdown-body pre {
+  max-height: 300px;
+  overflow: auto;
+}
+
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Paper ID styling */
+.paper-id {
+  font-family: monospace;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.875rem;
+}
+
+/* Table styles */
+.clickable-row {
+  cursor: pointer;
+}
+
+/* Show ellipsis for truncated text */
+.truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
