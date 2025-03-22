@@ -3,7 +3,7 @@ import React from 'react';
 import { MantineProvider, createTheme } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
 import { Home } from './pages/Home';
-import './index.css';
+//import './index.css';
 
 const App: React.FC = () => {
   // Create basic Mantine theme
