@@ -1,35 +1,39 @@
-// frontend-new/src/App.jsx
+// frontend-new/src/App.tsx
 import React from 'react';
 import { Container, Title, Text, Button, Group, Stack } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
-import { fetchMessage } from './api.js';
+import { fetchMessage } from './api';
 
-const App = () => {
-  const { data, isLoading, isError, refetch } = useQuery({
+interface MessageData {
+  message: string;
+}
+
+const App: React.FC = () => {
+  const { data, isLoading, isError, refetch } = useQuery<MessageData>({
     queryKey: ['hello'],
     queryFn: fetchMessage
   });
 
   return (
     <Container size="sm" py="xl">
-      <Stack spacing="md">
-        <Title order={1} align="center">Hello World!</Title>
+      <Stack gap="md">
+        <Title order={1} ta="center">Hello World!</Title>
         
-        <Text align="center">
+        <Text ta="center">
           A minimal app with Mantine UI, React Query, and Rollup
         </Text>
         
         {isLoading ? (
-          <Text align="center">Loading message...</Text>
+          <Text ta="center">Loading message...</Text>
         ) : isError ? (
-          <Text color="red" align="center">Error loading message</Text>
+          <Text c="red" ta="center">Error loading message</Text>
         ) : (
-          <Text size="xl" weight={500} align="center">
-            {data.message}
+          <Text size="xl" fw={500} ta="center">
+            {data?.message}
           </Text>
         )}
         
-        <Group position="center">
+        <Group justify="center">
           <Button onClick={() => refetch()}>
             Reload Message
           </Button>
