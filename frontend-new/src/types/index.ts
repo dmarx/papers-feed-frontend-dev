@@ -17,6 +17,7 @@ export type SortDirection = 'asc' | 'desc';
 export interface SortState {
   field: keyof Paper | null;
   direction: SortDirection;
+}
 
 export interface GroupedPapers {
   [date: string]: Paper[];
