@@ -2,14 +2,12 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { MantineProvider, createTheme } from '@mantine/core';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from './lib/queryClient';
 import App from './App';
 
 // Import Mantine styles
 import '@mantine/core/styles.css';
-
-// Create a client for React Query
-const queryClient = new QueryClient();
 
 // Create Mantine theme (required for v7)
 const theme = createTheme({
