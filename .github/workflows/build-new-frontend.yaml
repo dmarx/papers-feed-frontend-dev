@@ -1,6 +1,5 @@
 # .github/workflows/deploy-frontend.yml
-name: Build New Frontend
-
+name: Build and Deploy Frontend
 on:
   push:
     branches: [ main ]
@@ -15,36 +14,24 @@ permissions:
   actions: read
 
 jobs:
-  build-and-deploy-new-frontend:
+  build-and-deploy-frontend:
     runs-on: ubuntu-latest
-    #defaults:
-    #  run:
-    #    working-directory: frontend-new
         
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Regenerate package-lock.json
-        run: |
-          cd frontend-new
-          if [ -f "package-lock.json" ]; then
-            rm -f package-lock.json
-          fi
-          npm install --package-lock-only --no-audit
-          echo $("pwd")
-          ls -ha
-          
+        
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          #cache: 'npm'
+          cache: 'npm'
+          cache-dependency-path: 'frontend-new/package-lock.json'
       
       - name: Install Dependencies
         run: |
           cd frontend-new
-          npm install
+          npm ci || npm install
       
       - name: Run Tests
         run: |
@@ -55,15 +42,7 @@ jobs:
         run: |
           cd frontend-new
           npm run build
-          ls -ha
-        
-      - name: Copy public files to dist
-        run: |
-          cd frontend-new
-          mkdir -p dist
-          cp -r public/* dist/
-          ls -la dist/
-      
+          
       # Configure GitHub Pages
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -71,7 +50,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./frontend-new/dist
+          path: ./frontend-new/public
       
       - name: Deploy to GitHub Pages
         id: deployment
