@@ -1,0 +1,899 @@
+---
+File: frontend-new/package.json
+---
+{
+  "name": "hello-world-mantine",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "rollup -c -w",
+    "build": "rollup -c",
+    "test": "echo \"No tests yet\""
+  },
+  "dependencies": {
+    "@mantine/core": "^7.5.0",
+    "@mantine/hooks": "^7.5.0",
+    "@mantine/notifications": "^7.5.0",
+    "@tabler/icons-react": "^2.42.0",
+    "@tanstack/react-query": "^5.22.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-replace": "^5.0.5",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "rollup": "^4.9.6",
+    "rollup-plugin-livereload": "^2.0.5",
+    "rollup-plugin-postcss": "^4.0.2",
+    "rollup-plugin-serve": "^2.0.2",
+    "@rollup/plugin-babel": "^6.0.4",
+    "@babel/core": "^7.23.7",
+    "@babel/preset-env": "^7.23.8",
+    "@babel/preset-react": "^7.23.3",
+    "@babel/preset-typescript": "^7.23.3",
+    "tslib": "^2.6.2",
+    "typescript": "^5.3.0"
+  }
+}
+
+
+
+---
+File: frontend-new/public/index.html
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ArXiv Papers Feed</title>
+  <base href="/papers-feed-frontend-dev/">
+  <!-- Ensure CSS is loaded with correct path -->
+  <link rel="stylesheet" href="bundle.css">
+  <!-- Load React from CDN for better performance -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <!-- Load @tabler/icons-react from CDN -->
+  <script src="https://unpkg.com/@tabler/icons-react@2.42.0/dist/index.umd.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+  <script src="bundle.js"></script>
+</body>
+</html>
+
+
+
+---
+File: frontend-new/rollup.config.js
+---
+// frontend-new/rollup.config.js
+import resolve from '@rollup/plugin-node-resolve';
+import commonjs from '@rollup/plugin-commonjs';
+import replace from '@rollup/plugin-replace';
+import babel from '@rollup/plugin-babel';
+import terser from '@rollup/plugin-terser';
+import typescript from '@rollup/plugin-typescript';
+import postcss from 'rollup-plugin-postcss';
+import serve from 'rollup-plugin-serve';
+import livereload from 'rollup-plugin-livereload';
+
+const production = !process.env.ROLLUP_WATCH;
+// For GitHub Pages deployment, set the base path
+const basePath = production ? '/papers-feed-frontend-dev/' : '/';
+
+export default {
+  input: 'src/main.tsx',
+  output: {
+    file: 'public/bundle.js',
+    format: 'iife', // For browser compatibility
+    name: 'app',
+    sourcemap: !production,
+    globals: {
+      'react': 'React',
+      'react-dom': 'ReactDOM',
+      '@tabler/icons-react': 'TablerIconsReact'
+    }
+  },
+  plugins: [
+    // Replace environment variables
+    replace({
+      'process.env.NODE_ENV': JSON.stringify(production ? 'production' : 'development'),
+      'process.env.BASE_PATH': JSON.stringify(basePath),
+      preventAssignment: true
+    }),
+    
+    // Process CSS with extraction to a separate file
+    postcss({
+      extract: true,
+      modules: true, // Enable CSS modules
+      namedExports: true,
+      minimize: production,
+      extensions: ['.css']
+    }),
+    
+    // TypeScript support
+    typescript({
+      tsconfig: './tsconfig.json',
+      sourceMap: !production,
+      inlineSources: !production
+    }),
+    
+    // Babel for JSX and modern JavaScript features
+    babel({
+      babelHelpers: 'bundled',
+      presets: [
+        '@babel/preset-env',
+        '@babel/preset-react',
+        '@babel/preset-typescript'
+      ],
+      extensions: ['.js', '.jsx', '.ts', '.tsx'],
+      exclude: 'node_modules/**'
+    }),
+    
+    // Resolve node modules
+    resolve({
+      browser: true,
+      extensions: ['.js', '.jsx', '.ts', '.tsx'],
+      dedupe: ['react', 'react-dom', '@mantine/core']
+    }),
+    
+    // Convert CommonJS modules to ES6
+    commonjs({
+      include: 'node_modules/**',
+      transformMixedEsModules: true
+    }),
+    
+    // Minify for production
+    production && terser(),
+    
+    // Development server
+    !production && serve({
+      contentBase: ['public'],
+      host: 'localhost',
+      port: 3000
+    }),
+    
+    // Auto-reload during development
+    !production && livereload('public')
+  ].filter(Boolean),
+  
+  // External dependencies already available in the global scope
+  external: ['react', 'react-dom', '@tabler/icons-react'],
+  
+  // Watch settings
+  watch: {
+    clearScreen: false
+  }
+};
+
+
+
+---
+File: frontend-new/src/App.tsx
+---
+// frontend-new/src/App.tsx
+import React from 'react';
+import { MantineProvider, createTheme } from '@mantine/core';
+import { Notifications } from '@mantine/notifications';
+import { Home } from './pages/Home';
+//import './index.css';
+
+const App: React.FC = () => {
+  // Create basic Mantine theme
+  const theme = createTheme({
+    primaryColor: 'blue',
+    defaultRadius: 'md'
+  });
+  
+  return (
+    <MantineProvider theme={theme}>
+      <Notifications position="top-right" />
+      <Home />
+    </MantineProvider>
+  );
+};
+
+export default App;
+
+
+
+---
+File: frontend-new/src/api.ts
+---
+// frontend-new/src/api.ts
+import { Paper } from './types';
+
+export interface MessageResponse {
+  message: string;
+}
+
+export const fetchMessage = async (): Promise<MessageResponse> => {
+  // In a real app, this would be an API call
+  return new Promise(resolve => {
+    setTimeout(() => {
+      resolve({ 
+        message: "Configuration successful! Your Mantine UI + React Query + Rollup app is working correctly!"
+      });
+    }, 500);
+  });
+};
+
+export const fetchPapers = async (): Promise<Paper[]> => {
+  try {
+    const response = await fetch('/web/data/papers.json');
+    if (!response.ok) {
+      throw new Error('Failed to fetch papers');
+    }
+    const data = await response.json();
+    return Object.values(data) as Paper[];
+  } catch (error) {
+    console.error('Error fetching papers:', error);
+    return [];
+  }
+};
+
+
+
+---
+File: frontend-new/src/components/PapersTable.module.css
+---
+.th {
+  padding: 0;
+}
+
+.control {
+  width: 100%;
+  padding: var(--mantine-spacing-xs) var(--mantine-spacing-md);
+}
+
+.icon {
+  width: 21px;
+  height: 21px;
+  border-radius: 21px;
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+.truncate {
+  max-width: 250px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.paperTitle {
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+
+
+---
+File: frontend-new/src/components/PapersTable.tsx
+---
+// frontend-new/src/components/PapersTable.tsx
+import React, { useState, useMemo } from 'react';
+import { 
+  Table, 
+  TextInput, 
+  Group, 
+  Text, 
+  Badge, 
+  ScrollArea, 
+  Center,
+  Anchor,
+  UnstyledButton,
+  Tooltip
+} from '@mantine/core';
+import { IconSearch, IconSelector, IconChevronDown, IconChevronUp, IconCalendar, IconClock } from '@tabler/icons-react';
+import { Paper } from '../types';
+import classes from './PapersTable.module.css';
+
+interface PapersTableProps {
+  data: Paper[];
+  isLoading: boolean;
+}
+
+interface ThProps {
+  children: React.ReactNode;
+  sortKey?: keyof Paper;
+  sortBy: keyof Paper | null;
+  reverseSortDirection: boolean;
+  onSort: (key: keyof Paper) => void;
+}
+
+function Th({ children, sortKey, sortBy, reverseSortDirection, onSort }: ThProps) {
+  const sorted = sortBy === sortKey;
+  const Icon = sorted 
+    ? (reverseSortDirection ? IconChevronUp : IconChevronDown) 
+    : IconSelector;
+
+  if (!sortKey) {
+    return <Table.Th>{children}</Table.Th>;
+  }
+
+  return (
+    <Table.Th className={classes.th}>
+      <UnstyledButton onClick={() => onSort(sortKey)} className={classes.control}>
+        <Group justify="space-between">
+          <Text fw={500} fz="sm">
+            {children}
+          </Text>
+          <Center className={classes.icon}>
+            <Icon size={16} stroke={1.5} />
+          </Center>
+        </Group>
+      </UnstyledButton>
+    </Table.Th>
+  );
+}
+
+function filterData(data: Paper[], search: string) {
+  if (!search.trim()) {
+    return data;
+  }
+
+  const query = search.toLowerCase().trim();
+  return data.filter((paper) => 
+    paper.title.toLowerCase().includes(query) ||
+    paper.authors.toLowerCase().includes(query) ||
+    paper.abstract.toLowerCase().includes(query) ||
+    paper.arxivId.toLowerCase().includes(query) ||
+    paper.arxiv_tags.some(tag => tag.toLowerCase().includes(query))
+  );
+}
+
+function sortData(
+  data: Paper[],
+  payload: { sortBy: keyof Paper | null; reversed: boolean; search: string }
+) {
+  const { sortBy } = payload;
+
+  if (!sortBy) {
+    return filterData(data, payload.search);
+  }
+
+  return filterData(
+    [...data].sort((a, b) => {
+      const aValue = a[sortBy];
+      const bValue = b[sortBy];
+
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return payload.reversed
+          ? bValue.localeCompare(aValue)
+          : aValue.localeCompare(bValue);
+      }
+
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return payload.reversed ? bValue - aValue : aValue - bValue;
+      }
+
+      // Handle date strings
+      if (
+        sortBy === 'published_date' || 
+        sortBy === 'last_visited' || 
+        sortBy === 'last_read'
+      ) {
+        const aDate = new Date(aValue as string).getTime();
+        const bDate = new Date(bValue as string).getTime();
+        return payload.reversed ? bDate - aDate : aDate - bDate;
+      }
+
+      return 0;
+    }),
+    payload.search
+  );
+}
+
+export function PapersTable({ data, isLoading }: PapersTableProps) {
+  const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState<keyof Paper | null>('published_date');
+  const [reverseSortDirection, setReverseSortDirection] = useState(true);
+
+  const setSorting = (field: keyof Paper) => {
+    const reversed = field === sortBy ? !reverseSortDirection : false;
+    setReverseSortDirection(reversed);
+    setSortBy(field);
+  };
+
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(event.currentTarget.value);
+  };
+
+  const sortedData = useMemo(() => {
+    return sortData(data, { 
+      sortBy, 
+      reversed: reverseSortDirection, 
+      search
+    });
+  }, [data, sortBy, reverseSortDirection, search]);
+
+  // Format date for display
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  // Format reading time
+  const formatReadingTime = (seconds: number) => {
+    if (seconds < 60) return `${seconds}s`;
+    const minutes = Math.floor(seconds / 60);
+    return `${minutes}m`;
+  };
+
+  const rows = sortedData.map((paper) => (
+    <Table.Tr key={paper.id}>
+      <Table.Td>
+        <Anchor 
+          href={paper.url} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          size="sm"
+        >
+          {paper.arxivId}
+        </Anchor>
+      </Table.Td>
+      
+      <Table.Td>
+        <Tooltip label={paper.title} multiline width={300}>
+          <Anchor 
+            href={paper.url} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className={classes.paperTitle}
+            lineClamp={2}
+          >
+            {paper.title}
+          </Anchor>
+        </Tooltip>
+      </Table.Td>
+      
+      <Table.Td>
+        <Text size="sm" lineClamp={1} className={classes.truncate}>
+          {paper.authors}
+        </Text>
+      </Table.Td>
+      
+      <Table.Td>
+        <Group gap={5} wrap="nowrap">
+          <IconCalendar size={14} stroke={1.5} />
+          <Text size="sm">
+            {formatDate(paper.published_date)}
+          </Text>
+        </Group>
+      </Table.Td>
+      
+      <Table.Td>
+        <Group gap={5} wrap="nowrap">
+          <IconClock size={14} stroke={1.5} />
+          <Text size="sm">
+            {formatReadingTime(paper.total_reading_time_seconds)}
+          </Text>
+        </Group>
+      </Table.Td>
+      
+      <Table.Td>
+        <Group gap={5} wrap="wrap">
+          {paper.arxiv_tags.map((tag) => (
+            <Badge key={tag} size="sm" variant="light">
+              {tag}
+            </Badge>
+          ))}
+        </Group>
+      </Table.Td>
+    </Table.Tr>
+  ));
+
+  return (
+    <>
+      <TextInput
+        placeholder="Search papers by title, author, abstract, ID, or tags..."
+        mb="md"
+        leftSection={<IconSearch size={16} stroke={1.5} />}
+        value={search}
+        onChange={handleSearchChange}
+      />
+      
+      <ScrollArea h={500}>
+        <Table horizontalSpacing="md" verticalSpacing="xs" miw={800} layout="fixed">
+          <Table.Thead>
+            <Table.Tr>
+              <Th 
+                sortKey="arxivId"
+                sortBy={sortBy}
+                reverseSortDirection={reverseSortDirection}
+                onSort={setSorting}
+              >
+                ID
+              </Th>
+              
+              <Th 
+                sortKey="title"
+                sortBy={sortBy}
+                reverseSortDirection={reverseSortDirection}
+                onSort={setSorting}
+              >
+                Title
+              </Th>
+              
+              <Th 
+                sortKey="authors"
+                sortBy={sortBy}
+                reverseSortDirection={reverseSortDirection}
+                onSort={setSorting}
+              >
+                Authors
+              </Th>
+              
+              <Th 
+                sortKey="published_date"
+                sortBy={sortBy}
+                reverseSortDirection={reverseSortDirection}
+                onSort={setSorting}
+              >
+                Published
+              </Th>
+              
+              <Th 
+                sortKey="total_reading_time_seconds"
+                sortBy={sortBy}
+                reverseSortDirection={reverseSortDirection}
+                onSort={setSorting}
+              >
+                Read Time
+              </Th>
+              
+              <Th
+                onSort={() => {}}
+              >
+                Tags
+              </Th>
+            </Table.Tr>
+          </Table.Thead>
+          
+          <Table.Tbody>
+            {isLoading ? (
+              <Table.Tr>
+                <Table.Td colSpan={6}>
+                  <Text fw={500} ta="center">Loading papers...</Text>
+                </Table.Td>
+              </Table.Tr>
+            ) : rows.length === 0 ? (
+              <Table.Tr>
+                <Table.Td colSpan={6}>
+                  <Text fw={500} ta="center">No matching papers found</Text>
+                </Table.Td>
+              </Table.Tr>
+            ) : (
+              rows
+            )}
+          </Table.Tbody>
+        </Table>
+      </ScrollArea>
+    </>
+  );
+}
+
+
+
+---
+File: frontend-new/src/index.css
+---
+/* src/index.css */
+body {
+  margin: 0;
+}
+
+/* Markdown styling */
+.markdown-body {
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.markdown-body pre {
+  max-height: 300px;
+  overflow: auto;
+}
+
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Paper ID styling */
+.paper-id {
+  font-family: monospace;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.875rem;
+}
+
+/* Table styles */
+.clickable-row {
+  cursor: pointer;
+}
+
+/* Show ellipsis for truncated text */
+.truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+
+
+---
+File: frontend-new/src/index.tsx
+---
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import 'github-markdown-css/github-markdown.css';
+
+const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+
+
+
+---
+File: frontend-new/src/lib/queryClient.ts
+---
+// frontend-new/src/lib/queryClient.ts
+import { QueryClient } from '@tanstack/react-query';
+
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 30 * 60 * 1000, // 30 minutes (renamed from cacheTime in v5)
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
+
+
+
+---
+File: frontend-new/src/main.tsx
+---
+// frontend-new/src/main.tsx
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from './lib/queryClient';
+import App from './App';
+
+// Import Mantine styles
+import '@mantine/core/styles.css';
+import '@mantine/notifications/styles.css';
+
+// Render the app
+const rootElement = document.getElementById('root');
+if (!rootElement) throw new Error('Root element not found');
+
+const root = createRoot(rootElement);
+root.render(
+  <React.StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <App />
+    </QueryClientProvider>
+  </React.StrictMode>
+);
+
+
+
+---
+File: frontend-new/src/pages/Home.tsx
+---
+// frontend-new/src/pages/Home.tsx
+import React from 'react';
+import { Container, Title, Text, Stack, Tabs, Alert, Paper } from '@mantine/core';
+import { IconAlertCircle } from '@tabler/icons-react';
+import { useQuery } from '@tanstack/react-query';
+import { fetchPapers } from '../api';
+import { PapersTable } from '../components/PapersTable';
+
+export const Home: React.FC = () => {
+  const { data: papers = [], isLoading, isError, error } = useQuery({
+    queryKey: ['papers'],
+    queryFn: fetchPapers,
+    retry: 1
+  });
+
+  return (
+    <Container size="xl" py="xl">
+      <Stack gap="md">
+        <Title order={1} ta="center">ArXiv Papers Feed</Title>
+        
+        <Text ta="center" c="dimmed" mb="xl">
+          Browse and search through your collection of ArXiv papers
+        </Text>
+        
+        {isError ? (
+          <Alert 
+            icon={<IconAlertCircle size={16} />} 
+            title="Data loading error" 
+            color="red"
+            variant="filled"
+          >
+            {error instanceof Error ? error.message : 'Failed to load papers. Make sure the papers.json file is available at /web/data/papers.json'}
+          </Alert>
+        ) : (
+          <Paper p="md" shadow="sm" radius="md">
+            <Tabs defaultValue="all">
+              <Tabs.List>
+                <Tabs.Tab value="all">All Papers ({papers.length})</Tabs.Tab>
+                <Tabs.Tab value="recent">Recently Visited ({Math.min(papers.length, 10)})</Tabs.Tab>
+              </Tabs.List>
+
+              <Tabs.Panel value="all" pt="md">
+                <PapersTable data={papers} isLoading={isLoading} />
+              </Tabs.Panel>
+              
+              <Tabs.Panel value="recent" pt="md">
+                <PapersTable 
+                  data={papers.slice()
+                    .sort((a, b) => new Date(b.last_visited).getTime() - new Date(a.last_visited).getTime())
+                    .slice(0, 10)
+                  } 
+                  isLoading={isLoading} 
+                />
+              </Tabs.Panel>
+            </Tabs>
+          </Paper>
+        )}
+      </Stack>
+    </Container>
+  );
+};
+
+
+
+---
+File: frontend-new/src/types/index.ts
+---
+export interface Paper {
+  id: string;
+  title: string;
+  authors: string;
+  abstract: string;
+  url: string;
+  arxivId: string;
+  last_visited: string;
+  last_read: string;
+  total_reading_time_seconds: number;
+  published_date: string;
+  arxiv_tags: string[];
+}
+
+export type SortDirection = 'asc' | 'desc';
+
+export interface SortState {
+  field: keyof Paper | null;
+  direction: SortDirection;
+}
+
+export interface GroupedPapers {
+  [date: string]: Paper[];
+}
+
+export interface FilterState {
+  mode: 'any' | 'all' | 'none';
+  activeTags: string[];
+}
+
+export interface UrlState {
+  q?: string;
+  fields?: string;
+  mode?: 'any' | 'all' | 'none';
+  tags?: string;
+}
+
+export interface CategoryInfo {
+  name: string;
+  color: string;
+}
+
+export interface GitInfo {
+  repo: string;
+  branch: string;
+  commit: string;
+}
+
+export interface AppSettings {
+  coloringEnabled: boolean;
+  colorBy: 'freshness' | 'readingTime';
+  enabledFeatures: Record<string, boolean>;
+}
+
+
+
+---
+File: frontend-new/src/vite-env.d.ts
+---
+// frontend-new/src/vite-env.d.ts
+/// <reference types="react" />
+/// <reference types="react-dom" />
+
+declare module '*.css' {
+  const classes: { [key: string]: string };
+  export default classes;
+}
+
+declare module '*.svg' {
+  import * as React from 'react';
+
+  export const ReactComponent: React.FunctionComponent<
+    React.SVGProps<SVGSVGElement>
+  >;
+
+  const src: string;
+  export default src;
+}
+
+interface ImportMetaEnv {
+  readonly VITE_APP_TITLE: string;
+  // more env variables...
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
+}
+
+
+
+---
+File: frontend-new/tsconfig.json
+---
+{
+  "compilerOptions": {
+    "target": "es2020",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "sourceMap": true,
+    "declaration": false,
+    "outDir": "./dist",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  },
+  "include": [
+    "src"
+  ]
+}
+
+
