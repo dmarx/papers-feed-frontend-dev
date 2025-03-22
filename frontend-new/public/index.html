@@ -4,11 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hello World - Mantine</title>
-  <link rel="stylesheet" href="./bundle.css">
+  <base href="/papers-feed-frontend-dev/">
+  <!-- Ensure CSS is loaded with correct path -->
+  <link rel="stylesheet" href="bundle.css">
+  <!-- In production, we load React from CDN for better performance -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 </head>
 <body>
   <div id="root"></div>
-  <p>hello</p>
-  <script src="./bundle.js"></script>
+  <script src="bundle.js"></script>
 </body>
 </html>
