@@ -22,7 +22,8 @@ export default {
     sourcemap: !production,
     globals: {
       'react': 'React',
-      'react-dom': 'ReactDOM'
+      'react-dom': 'ReactDOM',
+      '@tabler/icons-react': 'TablerIconsReact'
     }
   },
   plugins: [
@@ -65,17 +66,13 @@ export default {
     resolve({
       browser: true,
       extensions: ['.js', '.jsx', '.ts', '.tsx'],
-      dedupe: ['react', 'react-dom', '@mantine/core', '@tabler/icons-react']
+      dedupe: ['react', 'react-dom', '@mantine/core']
     }),
     
     // Convert CommonJS modules to ES6
     commonjs({
       include: 'node_modules/**',
-      transformMixedEsModules: true,
-      // This helps with resolving named exports from CJS modules
-      namedExports: {
-        '@tabler/icons-react': Object.keys(require('@tabler/icons-react'))
-      }
+      transformMixedEsModules: true
     }),
     
     // Minify for production
@@ -93,7 +90,7 @@ export default {
   ].filter(Boolean),
   
   // External dependencies already available in the global scope
-  external: [],
+  external: ['react', 'react-dom', '@tabler/icons-react'],
   
   // Watch settings
   watch: {
