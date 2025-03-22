@@ -17,14 +17,12 @@ export default {
   input: 'src/main.tsx',
   output: {
     file: 'public/bundle.js',
-    format: 'iife', // Changed from 'esm' to 'iife' for browser compatibility
-    name: 'app', // Required for IIFE format
+    format: 'iife', // For browser compatibility
+    name: 'app',
     sourcemap: !production,
     globals: {
       'react': 'React',
-      'react-dom': 'ReactDOM',
-      '@mantine/core': 'mantine',
-      '@tanstack/react-query': 'reactQuery'
+      'react-dom': 'ReactDOM'
     }
   },
   plugins: [
@@ -38,8 +36,10 @@ export default {
     // Process CSS with extraction to a separate file
     postcss({
       extract: true,
+      modules: true, // Enable CSS modules
+      namedExports: true,
       minimize: production,
-      modules: false
+      extensions: ['.css']
     }),
     
     // TypeScript support
@@ -64,14 +64,18 @@ export default {
     // Resolve node modules
     resolve({
       browser: true,
-      extensions: ['.js', '.jsx', '.ts', '.tsx']
+      extensions: ['.js', '.jsx', '.ts', '.tsx'],
+      dedupe: ['react', 'react-dom', '@mantine/core', '@tabler/icons-react']
     }),
     
     // Convert CommonJS modules to ES6
     commonjs({
       include: 'node_modules/**',
-      // This handles the 'exports is not defined' error
-      transformMixedEsModules: true
+      transformMixedEsModules: true,
+      // This helps with resolving named exports from CJS modules
+      namedExports: {
+        '@tabler/icons-react': Object.keys(require('@tabler/icons-react'))
+      }
     }),
     
     // Minify for production
@@ -88,8 +92,8 @@ export default {
     !production && livereload('public')
   ].filter(Boolean),
   
-  // External dependencies to be excluded from the bundle
-  external: production ? [] : ['react', 'react-dom'],
+  // External dependencies already available in the global scope
+  external: [],
   
   // Watch settings
   watch: {
