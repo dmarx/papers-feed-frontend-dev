@@ -1,4 +1,5 @@
 // frontend-new/src/api.ts
+import { Paper } from './types';
 
 export interface MessageResponse {
   message: string;
@@ -6,7 +7,6 @@ export interface MessageResponse {
 
 export const fetchMessage = async (): Promise<MessageResponse> => {
   // In a real app, this would be an API call
-  // For now, we'll simulate a delay and return a static message
   return new Promise(resolve => {
     setTimeout(() => {
       resolve({ 
@@ -14,4 +14,18 @@ export const fetchMessage = async (): Promise<MessageResponse> => {
       });
     }, 500);
   });
+};
+
+export const fetchPapers = async (): Promise<Paper[]> => {
+  try {
+    const response = await fetch('/web/data/papers.json');
+    if (!response.ok) {
+      throw new Error('Failed to fetch papers');
+    }
+    const data = await response.json();
+    return Object.values(data) as Paper[];
+  } catch (error) {
+    console.error('Error fetching papers:', error);
+    return [];
+  }
 };
