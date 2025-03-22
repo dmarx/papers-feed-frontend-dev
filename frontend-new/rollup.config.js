@@ -10,34 +10,36 @@ import serve from 'rollup-plugin-serve';
 import livereload from 'rollup-plugin-livereload';
 
 const production = !process.env.ROLLUP_WATCH;
+// For GitHub Pages deployment, set the base path
+const basePath = production ? '/papers-feed-frontend-dev/' : '/';
 
 export default {
   input: 'src/main.tsx',
   output: {
     file: 'public/bundle.js',
-    format: 'iife',
-    sourcemap: !production
+    format: 'iife', // Changed from 'esm' to 'iife' for browser compatibility
+    name: 'app', // Required for IIFE format
+    sourcemap: !production,
+    globals: {
+      'react': 'React',
+      'react-dom': 'ReactDOM',
+      '@mantine/core': 'mantine',
+      '@tanstack/react-query': 'reactQuery'
+    }
   },
   plugins: [
-      // This plugin helps to strip 'use client' directives
-     {
-       name: 'strip-use-client',
-       transform(code) {
-         // Remove 'use client' directive
-         return code.replace(/['"]use client['"];?\n?/g, '');
-       }
-     },
-    
     // Replace environment variables
     replace({
       'process.env.NODE_ENV': JSON.stringify(production ? 'production' : 'development'),
+      'process.env.BASE_PATH': JSON.stringify(basePath),
       preventAssignment: true
     }),
     
-    // Process CSS
+    // Process CSS with extraction to a separate file
     postcss({
-      extract: 'public/bundle.css',
-      minimize: production
+      extract: true,
+      minimize: production,
+      modules: false
     }),
     
     // TypeScript support
@@ -55,7 +57,8 @@ export default {
         '@babel/preset-react',
         '@babel/preset-typescript'
       ],
-      extensions: ['.js', '.jsx', '.ts', '.tsx']
+      extensions: ['.js', '.jsx', '.ts', '.tsx'],
+      exclude: 'node_modules/**'
     }),
     
     // Resolve node modules
@@ -65,7 +68,11 @@ export default {
     }),
     
     // Convert CommonJS modules to ES6
-    commonjs(),
+    commonjs({
+      include: 'node_modules/**',
+      // This handles the 'exports is not defined' error
+      transformMixedEsModules: true
+    }),
     
     // Minify for production
     production && terser(),
@@ -80,6 +87,9 @@ export default {
     // Auto-reload during development
     !production && livereload('public')
   ].filter(Boolean),
+  
+  // External dependencies to be excluded from the bundle
+  external: production ? [] : ['react', 'react-dom'],
   
   // Watch settings
   watch: {
