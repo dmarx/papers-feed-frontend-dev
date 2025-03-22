@@ -19,6 +19,15 @@ export default {
     sourcemap: !production
   },
   plugins: [
+      // This plugin helps to strip 'use client' directives
+     {
+       name: 'strip-use-client',
+       transform(code) {
+         // Remove 'use client' directive
+         return code.replace(/['"]use client['"];?\n?/g, '');
+       }
+     },
+    
     // Replace environment variables
     replace({
       'process.env.NODE_ENV': JSON.stringify(production ? 'production' : 'development'),
