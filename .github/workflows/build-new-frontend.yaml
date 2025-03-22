@@ -42,6 +42,23 @@ jobs:
         run: |
           cd frontend-new
           npm run build
+
+      - name: Prepare deployment
+        run: |
+          cd frontend-new
+          # Ensure bundle.css exists, create an empty one if not
+          if [ ! -f "public/bundle.css" ]; then
+            touch public/bundle.css
+          fi
+          
+          # Create data/ directory
+          mkdir -p public/data
+          
+          # Copy papers.json to the public folder if it exists
+          if [ -f "papers.json" ]; then
+            cp web/data/papers.json public/data/papers.json
+          fi
+
           
       # Configure GitHub Pages
       - name: Setup Pages
