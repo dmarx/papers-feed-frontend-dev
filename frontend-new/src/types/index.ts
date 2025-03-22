@@ -1,16 +1,22 @@
 export interface Paper {
   id: string;
-  arxivId: string;
   title: string;
   authors: string;
   abstract: string;
-  published_date: string;
-  last_visited: string;
   url: string;
-  arxiv_tags: string[];
+  arxivId: string;
+  last_visited: string;
+  last_read: string;
   total_reading_time_seconds: number;
-  features_path?: Record<string, string>;
+  published_date: string;
+  arxiv_tags: string[];
 }
+
+export type SortDirection = 'asc' | 'desc';
+
+export interface SortState {
+  field: keyof Paper | null;
+  direction: SortDirection;
 
 export interface GroupedPapers {
   [date: string]: Paper[];
