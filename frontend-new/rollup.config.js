@@ -23,10 +23,18 @@ export default {
     globals: {
       'react': 'React',
       'react-dom': 'ReactDOM',
-      '@tabler/icons-react': 'TablerIconsReact'
+      '@tabler/icons-react': 'TablerIcons' // Updated global name to match CDN
     }
   },
   plugins: [
+    // Strip 'use client' directives
+    {
+      name: 'strip-use-client',
+      transform(code) {
+        return code.replace(/['"]use client['"];?\n?/g, '');
+      }
+    },
+    
     // Replace environment variables
     replace({
       'process.env.NODE_ENV': JSON.stringify(production ? 'production' : 'development'),
@@ -66,7 +74,7 @@ export default {
     resolve({
       browser: true,
       extensions: ['.js', '.jsx', '.ts', '.tsx'],
-      dedupe: ['react', 'react-dom', '@mantine/core']
+      dedupe: ['react', 'react-dom']
     }),
     
     // Convert CommonJS modules to ES6
