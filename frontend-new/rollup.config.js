@@ -22,8 +22,8 @@ export default {
     sourcemap: !production,
     globals: {
       'react': 'React',
-      'react-dom': 'ReactDOM',
-      '@tabler/icons-react': 'TablerIcons' // Updated global name to match CDN
+      'react-dom': 'ReactDOM'
+      // Remove TablerIcons as we're bundling it now
     }
   },
   plugins: [
@@ -48,7 +48,11 @@ export default {
       modules: true, // Enable CSS modules
       namedExports: true,
       minimize: production,
-      extensions: ['.css']
+      extensions: ['.css'],
+      // Add this to ensure CSS module naming is consistent
+      autoModules: true,
+      // Fix CSS module class naming pattern
+      generateScopedName: '[name]__[local]___[hash:base64:5]'
     }),
     
     // TypeScript support
@@ -97,8 +101,9 @@ export default {
     !production && livereload('public')
   ].filter(Boolean),
   
-  // External dependencies already available in the global scope
-  external: ['react', 'react-dom', '@tabler/icons-react'],
+  // Only exclude React if you're using the CDN version
+  // external: ['react', 'react-dom'],
+  // Don't mark TablerIcons as external - we'll bundle it
   
   // Watch settings
   watch: {
