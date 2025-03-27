@@ -57,12 +57,12 @@ jobs:
           if [ ! -f "frontend-new/public/bundle.css" ]; then
             touch frontend-new/public/bundle.css
           fi
-          
-          # Create data/ directory
-          mkdir -p frontend-new/public/data
+
           
           # Copy papers.json to the public folder if it exists
-          cp data/papers/papers.json frontend-new/public/data/papers.json
+          cp data/papers/papers.json frontend-new/public/papers.json
+
+          ls -lha frontend-new/public/
 
           
       # Configure GitHub Pages
