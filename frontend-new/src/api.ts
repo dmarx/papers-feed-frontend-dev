@@ -18,7 +18,7 @@ export const fetchMessage = async (): Promise<MessageResponse> => {
 
 export const fetchPapers = async (): Promise<Paper[]> => {
   try {
-    const response = await fetch('/data/papers.json');
+    const response = await fetch('/papers.json');
     if (!response.ok) {
       throw new Error('Failed to fetch papers');
     }
