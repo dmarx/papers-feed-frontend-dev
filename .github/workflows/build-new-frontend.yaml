@@ -62,7 +62,7 @@ jobs:
           mkdir -p frontend-new/public/data
           
           # Copy papers.json to the public folder if it exists
-          cp data/papers.json frontend-new/public/data/papers.json
+          cp data/papers/papers.json frontend-new/public/data/papers.json
 
           
       # Configure GitHub Pages
