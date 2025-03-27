@@ -22,8 +22,8 @@ export default {
     sourcemap: !production,
     globals: {
       'react': 'React',
-      'react-dom': 'ReactDOM',
-      '@tabler/icons-react': 'TablerIcons' // Updated global name to match CDN
+      'react-dom': 'ReactDOM'
+      //'@tabler/icons-react': 'TablerIcons' // Updated global name to match CDN
     }
   },
   plugins: [
