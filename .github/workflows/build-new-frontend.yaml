@@ -64,7 +64,7 @@ jobs:
           
           # Copy papers.json to the public folder if it exists
           if [ -f "papers.json" ]; then
-            cp web/data/papers.json public/data/papers.json
+            cp ../web/data/papers.json public/data/papers.json
           fi
 
           
