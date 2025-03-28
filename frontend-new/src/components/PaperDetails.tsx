@@ -49,6 +49,13 @@ export function PaperDetails({ arxivId, onClose }: PaperDetailsProps) {
     enabled: !!paperDetails?.meta?.objectId
   });
   
+  // Debug: Log when the modal opens/closes
+  useEffect(() => {
+    if (arxivId) {
+      console.log('Modal opened for arxivId:', arxivId);
+    }
+  }, [arxivId]);
+  
   // Format date for display
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString(undefined, {
@@ -74,6 +81,24 @@ export function PaperDetails({ arxivId, onClose }: PaperDetailsProps) {
       title={<Title order={3}>Paper Details</Title>}
       size="xl"
       scrollAreaComponent={ScrollArea}
+      zIndex={1000}
+      centered
+      overlayProps={{
+        color: '#000',
+        opacity: 0.55,
+        blur: 3
+      }}
+      styles={{
+        content: {
+          maxHeight: '85vh',
+          overflowY: 'auto'
+        },
+        header: {
+          marginBottom: '0.5rem',
+          borderBottom: '1px solid #eee',
+          paddingBottom: '0.5rem'
+        }
+      }}
     >
       {isLoading ? (
         <Text>Loading paper details...</Text>
@@ -90,7 +115,7 @@ export function PaperDetails({ arxivId, onClose }: PaperDetailsProps) {
           </Tabs.List>
 
           <Tabs.Panel value="details" pt="md">
-            <Stack>
+            <Stack spacing="md">
               <Title order={4}>{paperDetails.data.title}</Title>
               
               <Group>
@@ -103,20 +128,24 @@ export function PaperDetails({ arxivId, onClose }: PaperDetailsProps) {
                 </Anchor>
               </Group>
               
-              <Text size="sm" fw={500}>Authors</Text>
-              <Text>{paperDetails.data.authors}</Text>
-              
-              <Group>
-                <Group gap={5}>
-                  <IconCalendar size={16} stroke={1.5} />
-                  <Text size="sm">Published: {formatDate(paperDetails.data.published_date)}</Text>
-                </Group>
-                
-                <Group gap={5}>
-                  <IconClock size={16} stroke={1.5} />
-                  <Text size="sm">Reading time: {formatReadingTime(paperDetails.data.total_reading_time_seconds)}</Text>
-                </Group>
-              </Group>
+              <Paper p="md" withBorder>
+                <Stack spacing="xs">
+                  <Text size="sm" fw={500}>Authors</Text>
+                  <Text>{paperDetails.data.authors}</Text>
+                  
+                  <Group mt="xs">
+                    <Group gap={5}>
+                      <IconCalendar size={16} stroke={1.5} />
+                      <Text size="sm">Published: {formatDate(paperDetails.data.published_date)}</Text>
+                    </Group>
+                    
+                    <Group gap={5}>
+                      <IconClock size={16} stroke={1.5} />
+                      <Text size="sm">Reading time: {formatReadingTime(paperDetails.data.total_reading_time_seconds)}</Text>
+                    </Group>
+                  </Group>
+                </Stack>
+              </Paper>
               
               <Text size="sm" fw={500}>Tags</Text>
               <Group gap={8}>
@@ -219,6 +248,11 @@ export function PaperDetails({ arxivId, onClose }: PaperDetailsProps) {
               </Group>
               
               <Group>
+                <Text fw={500}>Issue Number:</Text>
+                <Text>{paperDetails.meta.issueNumber}</Text>
+              </Group>
+              
+              <Group>
                 <Text fw={500}>Last Visited:</Text>
                 <Text>{formatDate(paperDetails.data.last_visited)}</Text>
               </Group>
@@ -263,7 +297,13 @@ export function PaperDetails({ arxivId, onClose }: PaperDetailsProps) {
             )}
           </Tabs.Panel>
         </Tabs>
-      ) : null}
+      ) : (
+        <Text fw={500}>No data available for this paper.</Text>
+      )}
+      
+      <Group position="right" mt="xl">
+        <Button onClick={onClose} variant="outline">Close</Button>
+      </Group>
     </Modal>
   );
 }
