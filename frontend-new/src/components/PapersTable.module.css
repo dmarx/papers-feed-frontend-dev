@@ -14,12 +14,12 @@
 }
 
 .clickable {
-  cursor: pointer;
-  transition: background-color 0.2s;
+  cursor: pointer !important;
+  transition: background-color 0.2s !important;
 }
 
 .clickable:hover {
-  background-color: var(--mantine-color-blue-0);
+  background-color: var(--mantine-color-blue-0) !important;
 }
 
 .truncate {
