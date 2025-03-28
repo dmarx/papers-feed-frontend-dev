@@ -15,6 +15,7 @@ import {
 import { IconSearch, IconSelector, IconChevronDown, IconChevronUp, IconCalendar, IconClock } from '@tabler/icons-react';
 import { Paper } from '../types';
 import classes from './PapersTable.module.css';
+import { PaperDetails } from './PaperDetails'; // Import our new component
 
 interface PapersTableProps {
   data: Paper[];
@@ -116,6 +117,8 @@ export function PapersTable({ data, isLoading }: PapersTableProps) {
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState<keyof Paper | null>('published_date');
   const [reverseSortDirection, setReverseSortDirection] = useState(true);
+  // Add state for the selected paper
+  const [selectedPaperId, setSelectedPaperId] = useState<string | null>(null);
 
   const setSorting = (field: keyof Paper) => {
     const reversed = field === sortBy ? !reverseSortDirection : false;
@@ -125,6 +128,16 @@ export function PapersTable({ data, isLoading }: PapersTableProps) {
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(event.currentTarget.value);
+  };
+
+  // Handle row click to open details modal
+  const handleRowClick = (arxivId: string) => {
+    setSelectedPaperId(arxivId);
+  };
+
+  // Handle modal close
+  const handleModalClose = () => {
+    setSelectedPaperId(null);
   };
 
   const sortedData = useMemo(() => {
@@ -152,13 +165,18 @@ export function PapersTable({ data, isLoading }: PapersTableProps) {
   };
 
   const rows = sortedData.map((paper) => (
-    <Table.Tr key={paper.id}>
+    <Table.Tr 
+      key={paper.id} 
+      className={classes.clickable} 
+      onClick={() => handleRowClick(paper.arxivId)}
+    >
       <Table.Td>
         <Anchor 
           href={paper.url} 
           target="_blank" 
           rel="noopener noreferrer"
           size="sm"
+          onClick={(e) => e.stopPropagation()} // Prevent row click when clicking the link
         >
           {paper.arxivId}
         </Anchor>
@@ -166,15 +184,12 @@ export function PapersTable({ data, isLoading }: PapersTableProps) {
       
       <Table.Td>
         <Tooltip label={paper.title} multiline width={300}>
-          <Anchor 
-            href={paper.url} 
-            target="_blank" 
-            rel="noopener noreferrer"
+          <Text 
             className={classes.paperTitle}
             lineClamp={2}
           >
             {paper.title}
-          </Anchor>
+          </Text>
         </Tooltip>
       </Table.Td>
       
@@ -300,6 +315,12 @@ export function PapersTable({ data, isLoading }: PapersTableProps) {
           </Table.Tbody>
         </Table>
       </ScrollArea>
+
+      {/* Paper details modal */}
+      <PaperDetails 
+        arxivId={selectedPaperId} 
+        onClose={handleModalClose} 
+      />
     </>
   );
 }
