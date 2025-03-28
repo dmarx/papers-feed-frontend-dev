@@ -49,7 +49,8 @@ export async function fetchPaperHistory(objectId: string): Promise<Array<{timest
 export async function fetchAllPapers(): Promise<StoredObject[]> {
   try {
     // Get all objects from GitHub Store
-    return await ghClient.getAllObjects();
+    //return await ghClient.getAllObjects();
+    return await ghClient.listAll();
   } catch (error) {
     console.error('Error fetching all papers:', error);
     throw error;
