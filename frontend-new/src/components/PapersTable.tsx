@@ -10,9 +10,10 @@ import {
   Center,
   Anchor,
   UnstyledButton,
-  Tooltip
+  Tooltip,
+  Notification
 } from '@mantine/core';
-import { IconSearch, IconSelector, IconChevronDown, IconChevronUp, IconCalendar, IconClock } from '@tabler/icons-react';
+import { IconSearch, IconSelector, IconChevronDown, IconChevronUp, IconCalendar, IconClock, IconClick } from '@tabler/icons-react';
 import { Paper } from '../types';
 import classes from './PapersTable.module.css';
 import { PaperDetails } from './PaperDetails'; // Import our new component
@@ -119,6 +120,9 @@ export function PapersTable({ data, isLoading }: PapersTableProps) {
   const [reverseSortDirection, setReverseSortDirection] = useState(true);
   // Add state for the selected paper
   const [selectedPaperId, setSelectedPaperId] = useState<string | null>(null);
+  // Add debug notification state
+  const [showDebugNotification, setShowDebugNotification] = useState(false);
+  const [debugMessage, setDebugMessage] = useState('');
 
   const setSorting = (field: keyof Paper) => {
     const reversed = field === sortBy ? !reverseSortDirection : false;
@@ -132,11 +136,20 @@ export function PapersTable({ data, isLoading }: PapersTableProps) {
 
   // Handle row click to open details modal
   const handleRowClick = (arxivId: string) => {
+    console.log('Row clicked for arxivId:', arxivId);
     setSelectedPaperId(arxivId);
+    setDebugMessage(`Opening details for paper: ${arxivId}`);
+    setShowDebugNotification(true);
+    
+    // Auto-hide the debug notification after 3 seconds
+    setTimeout(() => {
+      setShowDebugNotification(false);
+    }, 3000);
   };
 
   // Handle modal close
   const handleModalClose = () => {
+    console.log('Modal closed, selectedPaperId was:', selectedPaperId);
     setSelectedPaperId(null);
   };
 
@@ -169,6 +182,7 @@ export function PapersTable({ data, isLoading }: PapersTableProps) {
       key={paper.id} 
       className={classes.clickable} 
       onClick={() => handleRowClick(paper.arxivId)}
+      style={{ cursor: 'pointer' }}
     >
       <Table.Td>
         <Anchor 
@@ -231,6 +245,18 @@ export function PapersTable({ data, isLoading }: PapersTableProps) {
 
   return (
     <>
+      {showDebugNotification && (
+        <Notification 
+          title="Debug Info" 
+          onClose={() => setShowDebugNotification(false)}
+          color="blue" 
+          icon={<IconClick size={18} />}
+          style={{ position: 'fixed', bottom: 20, right: 20, zIndex: 1000 }}
+        >
+          {debugMessage}
+        </Notification>
+      )}
+      
       <TextInput
         placeholder="Search papers by title, author, abstract, ID, or tags..."
         mb="md"
@@ -316,6 +342,9 @@ export function PapersTable({ data, isLoading }: PapersTableProps) {
         </Table>
       </ScrollArea>
 
+      {/* Paper details modal - the selectedPaperId is: {selectedPaperId} */}
+      <Text c="dimmed" size="xs" mt="sm">Selected paper ID: {selectedPaperId || 'None'}</Text>
+      
       {/* Paper details modal */}
       <PaperDetails 
         arxivId={selectedPaperId} 
