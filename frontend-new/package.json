@@ -15,7 +15,8 @@
     "@tabler/icons-react": "^2.42.0",
     "@tanstack/react-query": "^5.22.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "gh-store-client": "^0.3.2"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.7",
