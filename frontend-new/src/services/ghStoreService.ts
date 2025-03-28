@@ -5,9 +5,11 @@ import { StoredObject } from '../types';
 // GitHub token should be provided via environment variables in a real app
 // For development, we're using a placeholder
 // In production, this would come from an environment variable or user authentication
-const GITHUB_TOKEN = import.meta.env.VITE_GITHUB_TOKEN || 'placeholder_token';
-const REPO = import.meta.env.VITE_GITHUB_REPO || 'owner/repo';
-
+//const GITHUB_TOKEN = import.meta.env.VITE_GITHUB_TOKEN || 'placeholder_token';
+//const REPO = import.meta.env.VITE_GITHUB_REPO || 'owner/repo';
+const REPO = "dmarx/papers-feed-frontend-dev" // TODO: remove `-frontend-dev`
+const GITHUB_TOKEN = null;
+  
 // Initialize the GitHub Store client
 const ghClient = new GitHubStoreClient(GITHUB_TOKEN, REPO);
 
