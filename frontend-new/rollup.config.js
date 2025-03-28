@@ -23,7 +23,6 @@ export default {
     globals: {
       'react': 'React',
       'react-dom': 'ReactDOM'
-      // Remove TablerIcons as we're bundling it now
     }
   },
   plugins: [
@@ -42,17 +41,19 @@ export default {
       preventAssignment: true
     }),
     
-    // Process CSS with extraction to a separate file
+    // Process CSS with better handling for modules
     postcss({
       extract: true,
-      modules: true, // Enable CSS modules
-      namedExports: true,
+      modules: {
+        // Fix CSS module class naming for consistency
+        generateScopedName: production 
+          ? '[hash:base64:5]' 
+          : '[name]__[local]'
+      },
+      autoModules: false, // Only treat .module.css as CSS modules
       minimize: production,
       extensions: ['.css'],
-      // Add this to ensure CSS module naming is consistent
-      autoModules: true,
-      // Fix CSS module class naming pattern
-      generateScopedName: '[name]__[local]___[hash:base64:5]'
+      use: ['sass'] // Add this if you want to use SASS
     }),
     
     // TypeScript support
@@ -94,18 +95,14 @@ export default {
     !production && serve({
       contentBase: ['public'],
       host: 'localhost',
-      port: 3000
+      port: 3000,
+      historyApiFallback: true
     }),
     
     // Auto-reload during development
     !production && livereload('public')
   ].filter(Boolean),
   
-  // Only exclude React if you're using the CDN version
-  // external: ['react', 'react-dom'],
-  // Don't mark TablerIcons as external - we'll bundle it
-  
-  // Watch settings
   watch: {
     clearScreen: false
   }
