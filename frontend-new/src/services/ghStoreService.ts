@@ -2,113 +2,80 @@
 import { GitHubStoreClient } from 'gh-store-client';
 import { StoredObject } from '../types';
 
-// GitHub token should be provided via environment variables in a real app
-// For development, we're using a placeholder
-// In production, this would come from an environment variable or user authentication
-//const GITHUB_TOKEN = import.meta.env.VITE_GITHUB_TOKEN || 'placeholder_token';
-//const REPO = import.meta.env.VITE_GITHUB_REPO || 'owner/repo';
-const REPO = "dmarx/papers-feed-frontend-dev" // TODO: remove `-frontend-dev`
+// Repository info
+const REPO = "dmarx/papers-feed";
 const GITHUB_TOKEN = null;
-  
+
 // Initialize the GitHub Store client
+// In a production app, you'd want to handle GitHub auth
+// For public repositories or read-only access, null token is fine
 const ghClient = new GitHubStoreClient(GITHUB_TOKEN, REPO);
 
 /**
- * Fetches the complete GitHub Store object for a paper by its ID
- * @param paperArxivId The ArXiv ID of the paper to fetch
- * @returns The complete GitHub Store object
+ * Fetches paper details directly from GitHub Store by arxivId
  */
-export async function fetchPaperDetails(paperArxivId: string): Promise<StoredObject | null> {
+export async function fetchPaperDetails(arxivId: string): Promise<StoredObject> {
   try {
-    // In a real implementation, you would fetch from the actual GitHub Store
-    // For now, we'll use a simulated response based on the papers.json data
-    
-    // Simulate a network request
-    const response = await fetch('./papers.json');
-    if (!response.ok) {
-      throw new Error('Failed to fetch papers');
-    }
-    
-    const papers = await response.json();
-    
-    // Find the paper by ArXiv ID
-    const paper = Object.values(papers).find(
-      (p: any) => p.arxivId === paperArxivId
-    );
+    // Query the GitHub Store for the paper by arxivId
+    const paper = await ghClient.getObjectByQuery({ arxivId });
     
     if (!paper) {
-      throw new Error(`Paper with ID ${paperArxivId} not found`);
+      throw new Error(`Paper with arxivId ${arxivId} not found`);
     }
     
-    // Simulate additional GitHub Store object data
-    // In a real implementation, you would use:
-    // const fullObject = await ghClient.getObject(paper.id);
-    
-    // Create an enhanced object with the paper data plus simulated gh-store metadata
-    const simulatedGhStoreObject: StoredObject = {
-      meta: {
-        objectId: paper.id,
-        label: `UID:${paper.id}`,
-        createdAt: new Date(paper.published_date),
-        updatedAt: new Date(paper.last_visited),
-        version: 1
-      },
-      data: {
-        ...paper,
-        // Simulated additional data that would be in the gh-store but not in papers.json
-        internal_comments: "This paper is highly relevant to our current research",
-        review_status: "peer_reviewed",
-        significance_rating: 4.5,
-        implementation_details: {
-          code_available: true,
-          github_repo: "https://github.com/example/paper-implementation"
-        },
-        citations_count: 127,
-        related_papers: [
-          "2204.01382",
-          "2103.14030",
-          "2105.05233"
-        ]
-      }
-    };
-    
-    return simulatedGhStoreObject;
+    return paper;
   } catch (error) {
     console.error('Error fetching paper details:', error);
-    return null;
+    throw error;
   }
 }
 
 /**
- * Fetches the history of changes for a paper
- * @param paperId The ID of the paper
- * @returns Array of history entries
+ * Fetches the history of a paper object from GitHub Store
  */
-export async function fetchPaperHistory(paperId: string): Promise<Array<{timestamp: string; type: string; data: any}> | null> {
+export async function fetchPaperHistory(objectId: string): Promise<Array<{timestamp: string; type: string; data: any}>> {
   try {
-    // Simulate a history response
-    // In a real implementation, you would use:
-    // return await ghClient.getObjectHistory(paperId);
-    
-    return [
-      {
-        timestamp: new Date(Date.now() - 3600000 * 24 * 7).toISOString(),
-        type: "initial_state",
-        data: { status: "added_to_collection", notes: "Initial import from ArXiv" }
-      },
-      {
-        timestamp: new Date(Date.now() - 3600000 * 24 * 3).toISOString(),
-        type: "update",
-        data: { status: "reading", notes: "Started reading this paper" }
-      },
-      {
-        timestamp: new Date(Date.now() - 3600000 * 24).toISOString(),
-        type: "update",
-        data: { status: "completed", notes: "Finished reading, very informative" }
-      }
-    ];
+    // Get the object history directly from GitHub Store
+    return await ghClient.getObjectHistory(objectId);
   } catch (error) {
     console.error('Error fetching paper history:', error);
-    return null;
+    throw error;
+  }
+}
+
+/**
+ * Fetches all papers from GitHub Store
+ */
+export async function fetchAllPapers(): Promise<StoredObject[]> {
+  try {
+    // Get all objects from GitHub Store
+    return await ghClient.getAllObjects();
+  } catch (error) {
+    console.error('Error fetching all papers:', error);
+    throw error;
+  }
+}
+
+/**
+ * Updates a paper in GitHub Store
+ */
+export async function updatePaper(objectId: string, data: any): Promise<StoredObject> {
+  try {
+    return await ghClient.updateObject(objectId, data);
+  } catch (error) {
+    console.error('Error updating paper:', error);
+    throw error;
+  }
+}
+
+/**
+ * Creates a new paper in GitHub Store
+ */
+export async function createPaper(data: any): Promise<StoredObject> {
+  try {
+    return await ghClient.createObject(data);
+  } catch (error) {
+    console.error('Error creating paper:', error);
+    throw error;
   }
 }
