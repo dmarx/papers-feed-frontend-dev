@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@30.0.2/styles/ag-grid.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@30.0.2/styles/ag-theme-alpine.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/ag-grid-community@30.0.2/dist/ag-grid-community.min.js"></script>
+  <style>
+    body { margin: 0; padding: 20px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    h1 { margin-bottom: 20px; }
+    #myGrid { height: 800px; width: 100%; }
+  </style>
+</head>
+<body>
+  <h1>Dashboard</h1>
+  <div id="myGrid" class="ag-theme-alpine"></div>
+
+  <script>
+    fetch('papers.json')
+      .then(response => response.json())
+      .then(data => {
+        const columnDefs = Object.keys(data[0]).map(key => ({
+          field: key,
+          filter: true,
+          sortable: true,
+          resizable: true
+        }));
+
+        new agGrid.Grid(document.querySelector('#myGrid'), {
+          columnDefs: columnDefs,
+          rowData: data,
+          pagination: true,
+          paginationPageSize: 25,
+          defaultColDef: {
+            flex: 1,
+            minWidth: 100,
+            filter: true,
+            sortable: true,
+            resizable: true
+          },
+          enableAdvancedFilter: true,
+          animateRows: true
+        });
+      });
+  </script>
+</body>
+</html>
