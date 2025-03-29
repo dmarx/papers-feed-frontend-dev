@@ -554,17 +554,36 @@
           {column: "lastRead", dir: "desc"}
         ],
         columns: [
+          // {
+          //   formatter: "rowSelection", 
+          //   titleFormatter: "rowSelection", 
+          //   hozAlign: "center", 
+          //   headerSort: false, 
+          //   width: 30
+          // },
           {
-            formatter: "rowSelection", 
-            titleFormatter: "rowSelection", 
-            hozAlign: "center", 
-            headerSort: false, 
-            width: 30
-          },
-          {
-            formatter: "rowExpand", 
-            width: 30, 
-            hozAlign: "center", 
+            title: "", 
+            field: "_expand",
+            width: 40,
+            hozAlign: "center",
+            formatter: function(cell, formatterParams, onRendered) {
+              return '<i class="fas fa-plus-circle"></i>';
+            },
+            cellClick: function(e, cell) {
+              cell.getRow().toggleDetail();
+              
+              // Toggle icon
+              const icon = cell.getElement().querySelector('i');
+              if (icon) {
+                if (icon.classList.contains('fa-plus-circle')) {
+                  icon.classList.replace('fa-plus-circle', 'fa-minus-circle');
+                } else {
+                  icon.classList.replace('fa-minus-circle', 'fa-plus-circle');
+                }
+              }
+              
+              e.stopPropagation();
+            },
             headerSort: false
           },
           {
