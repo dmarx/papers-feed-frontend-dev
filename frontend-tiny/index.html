@@ -16,7 +16,7 @@
   <div id="myGrid" class="ag-theme-alpine"></div>
 
   <script>
-    fetch('data/papers/papers.json')
+    fetch('papers.json')
       .then(response => response.json())
       .then(data => {
         const columnDefs = Object.keys(data[0]).map(key => ({
