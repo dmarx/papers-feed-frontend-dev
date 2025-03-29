@@ -1,46 +1,220 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Dashboard</title>
+  <!-- index.html - Root of GitHub Pages site -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Academic Papers Dashboard</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@30.0.2/styles/ag-grid.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@30.0.2/styles/ag-theme-alpine.min.css">
   <script src="https://cdn.jsdelivr.net/npm/ag-grid-community@30.0.2/dist/ag-grid-community.min.js"></script>
   <style>
-    body { margin: 0; padding: 20px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-    h1 { margin-bottom: 20px; }
-    #myGrid { height: 800px; width: 100%; }
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #f5f7fa;
+    }
+    .header {
+      margin-bottom: 20px;
+    }
+    h1 {
+      margin: 0 0 10px 0;
+      color: #333;
+    }
+    .search-box {
+      margin-bottom: 15px;
+    }
+    #search-input {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+    .grid-container {
+      height: calc(100vh - 140px);
+      width: 100%;
+    }
+    .tag {
+      display: inline-block;
+      background-color: #e2f2ff;
+      padding: 3px 8px;
+      margin: 2px;
+      border-radius: 12px;
+      font-size: 12px;
+    }
+    .loading {
+      text-align: center;
+      padding: 40px;
+      font-size: 18px;
+      color: #666;
+    }
   </style>
 </head>
 <body>
-  <h1>Dashboard</h1>
-  <div id="myGrid" class="ag-theme-alpine"></div>
+  <div class="header">
+    <h1>Academic Papers Dashboard</h1>
+    <div class="search-box">
+      <input type="text" id="search-input" placeholder="Search papers by title, author, or content...">
+    </div>
+  </div>
+  
+  <div id="grid-container" class="grid-container ag-theme-alpine">
+    <div class="loading">Loading papers data...</div>
+  </div>
 
   <script>
-    fetch('data/papers/papers.json')
-      .then(response => response.json())
-      .then(data => {
-        const columnDefs = Object.keys(data[0]).map(key => ({
-          field: key,
-          filter: true,
-          sortable: true,
-          resizable: true
-        }));
+    // Format date to readable format
+    function formatDate(dateString) {
+      if (!dateString) return '';
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+    }
 
-        new agGrid.Grid(document.querySelector('#myGrid'), {
-          columnDefs: columnDefs,
-          rowData: data,
-          pagination: true,
-          paginationPageSize: 25,
-          defaultColDef: {
+    // Format reading time from seconds to minutes
+    function formatReadingTime(seconds) {
+      if (!seconds || seconds === 0) return 'Not read';
+      const minutes = Math.round(seconds / 60);
+      return minutes + (minutes === 1 ? ' minute' : ' minutes');
+    }
+
+    // Format tags with custom renderer
+    function tagsRenderer(params) {
+      if (!params.value || !Array.isArray(params.value) || params.value.length === 0) {
+        return '';
+      }
+      
+      return params.value.map(tag => 
+        `<span class="tag">${tag}</span>`
+      ).join(' ');
+    }
+
+    // Process the JSON data into a flat structure for the grid
+    function processData(data) {
+      return Object.values(data).map(paper => ({
+        id: paper.id,
+        title: paper.title,
+        authors: paper.authors,
+        abstract: paper.abstract,
+        published: formatDate(paper.published_date),
+        lastRead: paper.last_read ? formatDate(paper.last_read) : 'Never',
+        readingTime: formatReadingTime(paper.total_reading_time_seconds),
+        tags: paper.arxiv_tags,
+        url: paper.url
+      }));
+    }
+
+    // Configure and initialize the AG Grid
+    function setupGrid(rowData) {
+      const gridOptions = {
+        columnDefs: [
+          { 
+            field: 'title', 
+            headerName: 'Title', 
+            minWidth: 300,
+            flex: 2,
+            filter: true,
+            sortable: true,
+            resizable: true,
+            cellRenderer: params => {
+              return `<a href="${params.data.url}" target="_blank">${params.value}</a>`;
+            }
+          },
+          { 
+            field: 'authors', 
+            headerName: 'Authors', 
             flex: 1,
-            minWidth: 100,
+            minWidth: 200,
             filter: true,
             sortable: true,
             resizable: true
           },
-          enableAdvancedFilter: true,
-          animateRows: true
-        });
+          { 
+            field: 'published', 
+            headerName: 'Published', 
+            flex: 1,
+            minWidth: 120,
+            filter: true,
+            sortable: true
+          },
+          { 
+            field: 'lastRead', 
+            headerName: 'Last Read', 
+            flex: 1,
+            minWidth: 120,
+            filter: true,
+            sortable: true
+          },
+          { 
+            field: 'readingTime', 
+            headerName: 'Reading Time', 
+            flex: 1,
+            minWidth: 130,
+            filter: true,
+            sortable: true
+          },
+          { 
+            field: 'tags', 
+            headerName: 'arXiv Tags', 
+            flex: 1,
+            minWidth: 150,
+            filter: true,
+            sortable: true,
+            cellRenderer: tagsRenderer
+          }
+        ],
+        defaultColDef: {
+          flex: 1,
+          minWidth: 100,
+          filter: true,
+          sortable: true,
+          resizable: true,
+        },
+        rowData: rowData,
+        pagination: true,
+        paginationPageSize: 25,
+        domLayout: 'autoHeight',
+        animateRows: true,
+        suppressMovableColumns: false,
+        onGridReady: function(params) {
+          document.getElementById('search-input').addEventListener('input', function(e) {
+            const searchText = e.target.value;
+            params.api.setQuickFilter(searchText);
+          });
+        },
+        getRowHeight: function(params) {
+          return 48;
+        },
+        tooltipShowDelay: 0
+      };
+
+      // Initialize the grid
+      new agGrid.Grid(document.querySelector('#grid-container'), gridOptions);
+      
+      // Remove loading message once grid is ready
+      document.querySelector('.loading').style.display = 'none';
+    }
+
+    // Fetch the JSON data file
+    fetch('papers.json')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to load papers.json');
+        }
+        return response.json();
+      })
+      .then(data => {
+        const processedData = processData(data);
+        setupGrid(processedData);
+      })
+      .catch(error => {
+        document.querySelector('.loading').innerHTML = 
+          `Error loading data: ${error.message}. Make sure papers.json exists in the same directory as this HTML file.`;
       });
   </script>
 </body>
