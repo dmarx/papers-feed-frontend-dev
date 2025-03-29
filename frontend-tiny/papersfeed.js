@@ -131,7 +131,7 @@
       const paperKeys = Object.keys(objects).filter(key => key.startsWith("paper:"));
       
       for (const paperKey of paperKeys) {
-        const paperId = paperKey.split(":")[1];
+        const paperId = paperKey.split(":", 1)[1];
         const paperRaw = objects[paperKey];
         const paperData = paperRaw.data;
         const paperMeta = paperRaw.meta;
