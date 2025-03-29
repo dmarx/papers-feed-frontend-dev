@@ -1,24 +1,37 @@
-// frontend-new/src/components/PapersTable.tsx
+// src/components/PapersTable.tsx
 import React, { useState, useMemo } from 'react';
 import { 
   Table, 
-  TextInput, 
-  Group, 
-  Text, 
-  Badge, 
   ScrollArea, 
-  Center,
+  Text, 
+  Group, 
+  Badge, 
+  Tooltip, 
+  Box,
   Anchor,
   UnstyledButton,
-  Tooltip
+  Center,
+  Progress,
+  ActionIcon,
+  rem
 } from '@mantine/core';
-import { IconSearch, IconSelector, IconChevronDown, IconChevronUp, IconCalendar, IconClock } from '@tabler/icons-react';
+import { 
+  IconChevronDown, 
+  IconChevronUp, 
+  IconSelector, 
+  IconStar, 
+  IconStarFilled, 
+  IconFileText, 
+  IconDotsVertical 
+} from '@tabler/icons-react';
+import { formatDistanceToNow } from 'date-fns';
 import { Paper } from '../types';
 import classes from './PapersTable.module.css';
 
 interface PapersTableProps {
   data: Paper[];
   isLoading: boolean;
+  onRowClick?: (paper: Paper) => void;
 }
 
 interface ThProps {
@@ -30,35 +43,80 @@ interface ThProps {
 }
 
 function Th({ children, sortKey, sortBy, reverseSortDirection, onSort }: ThProps) {
-  const sorted = sortBy === sortKey;
-  const Icon = sorted 
+  const isSorted = sortBy === sortKey;
+  const Icon = isSorted 
     ? (reverseSortDirection ? IconChevronUp : IconChevronDown) 
     : IconSelector;
 
-  if (!sortKey) {
-    return <Table.Th>{children}</Table.Th>;
-  }
-
   return (
     <Table.Th className={classes.th}>
-      <UnstyledButton onClick={() => onSort(sortKey)} className={classes.control}>
-        <Group justify="space-between">
-          <Text fw={500} fz="sm">
-            {children}
-          </Text>
-          <Center className={classes.icon}>
-            <Icon size={16} stroke={1.5} />
-          </Center>
-        </Group>
-      </UnstyledButton>
+      {sortKey ? (
+        <UnstyledButton onClick={() => sortKey && onSort(sortKey)} className={classes.control}>
+          <Group justify="space-between" wrap="nowrap">
+            <Text fw={500} size="sm" className={classes.headerText}>{children}</Text>
+            <Center className={classes.icon}>
+              <Icon size={14} stroke={1.5} />
+            </Center>
+          </Group>
+        </UnstyledButton>
+      ) : (
+        <Text fw={500} size="sm" className={classes.headerText}>{children}</Text>
+      )}
     </Table.Th>
   );
 }
 
-function filterData(data: Paper[], search: string) {
-  if (!search.trim()) {
-    return data;
+// Format date for display
+const formatDate = (dateString: string): string => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+};
+
+// Format relative time (for last viewed)
+const formatRelativeTime = (dateString: string): string => {
+  try {
+    const date = new Date(dateString);
+    // Check if it's today
+    const today = new Date();
+    if (
+      date.getDate() === today.getDate() &&
+      date.getMonth() === today.getMonth() &&
+      date.getFullYear() === today.getFullYear()
+    ) {
+      return `Today ${date.toLocaleTimeString(undefined, { 
+        hour: 'numeric', 
+        minute: '2-digit',
+        hour12: true 
+      })}`;
+    }
+    
+    return formatDistanceToNow(date, { addSuffix: true });
+  } catch (e) {
+    return 'Unknown';
   }
+};
+
+// Format reading time
+const formatReadingTime = (seconds: number): string => {
+  if (!seconds) return '0m';
+  if (seconds < 60) return `${seconds}s`;
+  const minutes = Math.floor(seconds / 60);
+  return `${minutes}m`;
+};
+
+// Calculate reading progress percentage
+const calculateProgress = (readingTime: number, totalTime: number): number => {
+  if (!totalTime || !readingTime) return 0;
+  return Math.min(Math.round((readingTime / totalTime) * 100), 100);
+};
+
+// Function to filter data based on search term
+function filterData(data: Paper[], search: string): Paper[] {
+  if (!search.trim()) return data;
 
   const query = search.toLowerCase().trim();
   return data.filter((paper) => 
@@ -70,14 +128,15 @@ function filterData(data: Paper[], search: string) {
   );
 }
 
+// Function to sort data
 function sortData(
   data: Paper[],
   payload: { sortBy: keyof Paper | null; reversed: boolean; search: string }
-) {
-  const { sortBy } = payload;
+): Paper[] {
+  const { sortBy, reversed, search } = payload;
 
   if (!sortBy) {
-    return filterData(data, payload.search);
+    return filterData(data, search);
   }
 
   return filterData(
@@ -86,13 +145,13 @@ function sortData(
       const bValue = b[sortBy];
 
       if (typeof aValue === 'string' && typeof bValue === 'string') {
-        return payload.reversed
+        return reversed
           ? bValue.localeCompare(aValue)
           : aValue.localeCompare(bValue);
       }
 
       if (typeof aValue === 'number' && typeof bValue === 'number') {
-        return payload.reversed ? bValue - aValue : aValue - bValue;
+        return reversed ? bValue - aValue : aValue - bValue;
       }
 
       // Handle date strings
@@ -103,18 +162,18 @@ function sortData(
       ) {
         const aDate = new Date(aValue as string).getTime();
         const bDate = new Date(bValue as string).getTime();
-        return payload.reversed ? bDate - aDate : aDate - bDate;
+        return reversed ? bDate - aDate : aDate - bDate;
       }
 
       return 0;
     }),
-    payload.search
+    search
   );
 }
 
-export function PapersTable({ data, isLoading }: PapersTableProps) {
+export function PapersTable({ data, isLoading, onRowClick }: PapersTableProps) {
   const [search, setSearch] = useState('');
-  const [sortBy, setSortBy] = useState<keyof Paper | null>('published_date');
+  const [sortBy, setSortBy] = useState<keyof Paper | null>('last_visited');
   const [reverseSortDirection, setReverseSortDirection] = useState(true);
 
   const setSorting = (field: keyof Paper) => {
@@ -123,183 +182,213 @@ export function PapersTable({ data, isLoading }: PapersTableProps) {
     setSortBy(field);
   };
 
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearch(event.currentTarget.value);
-  };
-
   const sortedData = useMemo(() => {
-    return sortData(data, { 
-      sortBy, 
-      reversed: reverseSortDirection, 
-      search
+    return sortData(data, {
+      sortBy,
+      reversed: reverseSortDirection,
+      search,
     });
   }, [data, sortBy, reverseSortDirection, search]);
 
-  // Format date for display
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
+  // Check if a paper was viewed recently (last 24 hours)
+  const isRecentlyViewed = (dateString: string): boolean => {
+    try {
+      const viewDate = new Date(dateString);
+      const now = new Date();
+      const diffTime = now.getTime() - viewDate.getTime();
+      const diffHours = diffTime / (1000 * 60 * 60);
+      return diffHours < 24;
+    } catch (e) {
+      return false;
+    }
   };
 
-  // Format reading time
-  const formatReadingTime = (seconds: number) => {
-    if (seconds < 60) return `${seconds}s`;
-    const minutes = Math.floor(seconds / 60);
-    return `${minutes}m`;
-  };
-
-  const rows = sortedData.map((paper) => (
-    <Table.Tr key={paper.id}>
-      <Table.Td>
-        <Anchor 
-          href={paper.url} 
-          target="_blank" 
-          rel="noopener noreferrer"
-          size="sm"
-        >
-          {paper.arxivId}
-        </Anchor>
-      </Table.Td>
-      
-      <Table.Td>
-        <Tooltip label={paper.title} multiline width={300}>
-          <Anchor 
-            href={paper.url} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className={classes.paperTitle}
-            lineClamp={2}
+  const rows = sortedData.map((paper) => {
+    const isRecent = isRecentlyViewed(paper.last_visited);
+    const readingProgress = calculateProgress(paper.current_reading_time_seconds || 0, paper.total_reading_time_seconds);
+    
+    return (
+      <Table.Tr 
+        key={paper.id} 
+        className={isRecent ? classes.recentRow : ''}
+        onClick={() => onRowClick && onRowClick(paper)}
+      >
+        {/* Star column */}
+        <Table.Td className={classes.starColumn}>
+          <ActionIcon variant="subtle" color="yellow" aria-label="Star paper">
+            {paper.is_starred ? <IconStarFilled size={16} /> : <IconStar size={16} />}
+          </ActionIcon>
+        </Table.Td>
+        
+        {/* Paper ID */}
+        <Table.Td className={classes.idColumn}>
+          <Group gap={8} wrap="nowrap">
+            <IconFileText size={16} stroke={1.5} className={classes.fileIcon} />
+            <Text className={classes.paperIdText} ff="monospace" size="sm">
+              {paper.arxivId}
+            </Text>
+          </Group>
+        </Table.Td>
+        
+        {/* Title */}
+        <Table.Td className={classes.titleColumn}>
+          <Tooltip
+            label={paper.title}
+            multiline
+            w={300}
+            withArrow
+            position="top-start"
           >
-            {paper.title}
-          </Anchor>
-        </Tooltip>
-      </Table.Td>
-      
-      <Table.Td>
-        <Text size="sm" lineClamp={1} className={classes.truncate}>
-          {paper.authors}
-        </Text>
-      </Table.Td>
-      
-      <Table.Td>
-        <Group gap={5} wrap="nowrap">
-          <IconCalendar size={14} stroke={1.5} />
-          <Text size="sm">
-            {formatDate(paper.published_date)}
+            <Box>
+              <Text size="sm" fw={500} className={classes.titleText}>
+                {paper.title}
+              </Text>
+              <Text size="xs" c="dimmed" className={classes.subtitleText}>
+                {paper.abstract.substring(0, 80)}...
+              </Text>
+            </Box>
+          </Tooltip>
+          
+          <Group gap={6} mt={4}>
+            {paper.arxiv_tags.map((tag) => (
+              <Badge key={tag} size="xs" variant="light" className={classes.categoryBadge}>
+                {tag}
+              </Badge>
+            ))}
+          </Group>
+        </Table.Td>
+        
+        {/* Authors */}
+        <Table.Td className={classes.authorsColumn}>
+          <Text size="sm" className={classes.truncate}>
+            {paper.authors}
           </Text>
-        </Group>
-      </Table.Td>
-      
-      <Table.Td>
-        <Group gap={5} wrap="nowrap">
-          <IconClock size={14} stroke={1.5} />
-          <Text size="sm">
-            {formatReadingTime(paper.total_reading_time_seconds)}
+        </Table.Td>
+        
+        {/* Published Date */}
+        <Table.Td className={classes.dateColumn}>
+          <Text size="sm">{formatDate(paper.published_date)}</Text>
+        </Table.Td>
+        
+        {/* First Visited Date */}
+        <Table.Td className={classes.dateColumn}>
+          <Text size="sm">{formatDate(paper.first_visited || paper.last_visited)}</Text>
+        </Table.Td>
+        
+        {/* Last Visited Date */}
+        <Table.Td className={classes.dateColumn}>
+          <Text size="sm" fw={isRecent ? 500 : 400} className={isRecent ? classes.recentDate : ''}>
+            {formatRelativeTime(paper.last_visited)}
           </Text>
-        </Group>
-      </Table.Td>
-      
-      <Table.Td>
-        <Group gap={5} wrap="wrap">
-          {paper.arxiv_tags.map((tag) => (
-            <Badge key={tag} size="sm" variant="light">
-              {tag}
-            </Badge>
-          ))}
-        </Group>
-      </Table.Td>
-    </Table.Tr>
-  ));
+        </Table.Td>
+        
+        {/* Reading Time */}
+        <Table.Td className={classes.readingColumn}>
+          <Box>
+            <Progress 
+              value={readingProgress} 
+              size="sm" 
+              color={readingProgress === 100 ? 'teal' : 'blue'} 
+              mb={4}
+            />
+            <Text size="xs" c="dimmed">
+              {formatReadingTime(paper.total_reading_time_seconds)} ({readingProgress}%)
+            </Text>
+          </Box>
+        </Table.Td>
+        
+        {/* Actions */}
+        <Table.Td className={classes.actionsColumn}>
+          <ActionIcon variant="subtle" aria-label="More options">
+            <IconDotsVertical size={16} stroke={1.5} />
+          </ActionIcon>
+        </Table.Td>
+      </Table.Tr>
+    );
+  });
 
   return (
-    <>
-      <TextInput
-        placeholder="Search papers by title, author, abstract, ID, or tags..."
-        mb="md"
-        leftSection={<IconSearch size={16} stroke={1.5} />}
-        value={search}
-        onChange={handleSearchChange}
-      />
-      
-      <ScrollArea h={500}>
-        <Table horizontalSpacing="md" verticalSpacing="xs" miw={800} layout="fixed">
-          <Table.Thead>
+    <ScrollArea h={500}>
+      <Table withTableBorder highlightOnHover stickyHeader>
+        <Table.Thead className={classes.header}>
+          <Table.Tr>
+            <Th>⭐</Th>
+            <Th 
+              sortKey="arxivId"
+              sortBy={sortBy}
+              reverseSortDirection={reverseSortDirection}
+              onSort={setSorting}
+            >
+              ID
+            </Th>
+            <Th 
+              sortKey="title"
+              sortBy={sortBy}
+              reverseSortDirection={reverseSortDirection}
+              onSort={setSorting}
+            >
+              Title
+            </Th>
+            <Th 
+              sortKey="authors"
+              sortBy={sortBy}
+              reverseSortDirection={reverseSortDirection}
+              onSort={setSorting}
+            >
+              Authors
+            </Th>
+            <Th 
+              sortKey="published_date"
+              sortBy={sortBy}
+              reverseSortDirection={reverseSortDirection}
+              onSort={setSorting}
+            >
+              Published
+            </Th>
+            <Th 
+              sortKey="first_visited"
+              sortBy={sortBy}
+              reverseSortDirection={reverseSortDirection}
+              onSort={setSorting}
+            >
+              First Viewed
+            </Th>
+            <Th 
+              sortKey="last_visited"
+              sortBy={sortBy}
+              reverseSortDirection={reverseSortDirection}
+              onSort={setSorting}
+            >
+              Last Viewed
+            </Th>
+            <Th 
+              sortKey="total_reading_time_seconds"
+              sortBy={sortBy}
+              reverseSortDirection={reverseSortDirection}
+              onSort={setSorting}
+            >
+              Reading
+            </Th>
+            <Th>Actions</Th>
+          </Table.Tr>
+        </Table.Thead>
+        
+        <Table.Tbody>
+          {isLoading ? (
             <Table.Tr>
-              <Th 
-                sortKey="arxivId"
-                sortBy={sortBy}
-                reverseSortDirection={reverseSortDirection}
-                onSort={setSorting}
-              >
-                ID
-              </Th>
-              
-              <Th 
-                sortKey="title"
-                sortBy={sortBy}
-                reverseSortDirection={reverseSortDirection}
-                onSort={setSorting}
-              >
-                Title
-              </Th>
-              
-              <Th 
-                sortKey="authors"
-                sortBy={sortBy}
-                reverseSortDirection={reverseSortDirection}
-                onSort={setSorting}
-              >
-                Authors
-              </Th>
-              
-              <Th 
-                sortKey="published_date"
-                sortBy={sortBy}
-                reverseSortDirection={reverseSortDirection}
-                onSort={setSorting}
-              >
-                Published
-              </Th>
-              
-              <Th 
-                sortKey="total_reading_time_seconds"
-                sortBy={sortBy}
-                reverseSortDirection={reverseSortDirection}
-                onSort={setSorting}
-              >
-                Read Time
-              </Th>
-              
-              <Th
-                onSort={() => {}}
-              >
-                Tags
-              </Th>
+              <Table.Td colSpan={9}>
+                <Text fw={500} ta="center">Loading papers...</Text>
+              </Table.Td>
             </Table.Tr>
-          </Table.Thead>
-          
-          <Table.Tbody>
-            {isLoading ? (
-              <Table.Tr>
-                <Table.Td colSpan={6}>
-                  <Text fw={500} ta="center">Loading papers...</Text>
-                </Table.Td>
-              </Table.Tr>
-            ) : rows.length === 0 ? (
-              <Table.Tr>
-                <Table.Td colSpan={6}>
-                  <Text fw={500} ta="center">No matching papers found</Text>
-                </Table.Td>
-              </Table.Tr>
-            ) : (
-              rows
-            )}
-          </Table.Tbody>
-        </Table>
-      </ScrollArea>
-    </>
+          ) : rows.length === 0 ? (
+            <Table.Tr>
+              <Table.Td colSpan={9}>
+                <Text fw={500} ta="center">No matching papers found</Text>
+              </Table.Td>
+            </Table.Tr>
+          ) : rows}
+        </Table.Tbody>
+      </Table>
+    </ScrollArea>
   );
 }
