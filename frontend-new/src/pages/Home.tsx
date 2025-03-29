@@ -27,7 +27,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { fetchPapers } from '../api';
 import { PapersTable } from '../components/PapersTable';
-import { SearchBar } from '../components/SearchBar';
+import { SearchBar } from '../components/SearchBar/SearchBar';
 import { Paper as PaperType } from '../types';
 
 export const Home: React.FC = () => {
