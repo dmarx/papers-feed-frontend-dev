@@ -1,0 +1,47 @@
+/* src/components/SearchBar/SearchBar.module.css */
+.searchBarContainer {
+  border-radius: var(--mantine-radius-md);
+  background-color: var(--mantine-color-white);
+  border: 1px solid var(--mantine-color-gray-3);
+  padding: var(--mantine-spacing-xs) var(--mantine-spacing-md);
+  margin-bottom: var(--mantine-spacing-md);
+}
+
+.controls {
+  flex-wrap: nowrap;
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 300px;
+  max-width: 500px;
+}
+
+.activeFilters {
+  margin-bottom: var(--mantine-spacing-xs);
+  flex-wrap: wrap;
+}
+
+.filterBadge {
+  font-size: 11px;
+  height: 22px;
+  padding: 0 var(--mantine-spacing-xs);
+  background-color: var(--mantine-color-blue-0);
+  color: var(--mantine-color-blue-9);
+  border: 1px solid var(--mantine-color-blue-2);
+}
+
+.activeFilterButton {
+  background-color: var(--mantine-color-blue-1);
+  color: var(--mantine-color-blue-7);
+}
+
+.clearText {
+  margin-left: 4px;
+  font-size: 10px;
+}
+
+.viewModeControl {
+  border: 1px solid var(--mantine-color-blue-5);
+  min-width: 140px;
+}
