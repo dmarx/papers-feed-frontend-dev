@@ -1,8 +1,8 @@
 # .github/workflows/deploy-frontend.yml
 name: Build and Deploy New Frontend
 on:
-  push:
-    branches: [ main ]
+  # push:
+  #   branches: [ main ]
   
   # Allow manual trigger
   workflow_dispatch:
