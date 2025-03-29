@@ -564,14 +564,14 @@
               const value = cell.getValue();
               const url = cell.getRow().getData().url;
               return `<a href="${url}" target="_blank">${value}</a>`;
-            },
-            headerFilter: "input"
+            }
+            //,headerFilter: "input"
           },
           {
             title: "Authors", 
             field: "authors", 
-            widthGrow: 2,
-            headerFilter: "input"
+            widthGrow: 2
+            //,headerFilter: "input"
           },
           {
             title: "Published", 
