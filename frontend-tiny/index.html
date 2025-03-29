@@ -554,7 +554,7 @@
           {column: "lastRead", dir: "desc"}
         ],
         columns: [
-          {
+         {
             title: "", 
             field: "_expand",
             width: 40,
@@ -563,16 +563,15 @@
               return '<i class="fas fa-plus-circle"></i>';
             },
             cellClick: function(e, cell) {
-              cell.getRow().toggleDetail(); // Uncaught TypeError: cell.getRow(...).toggleDetail is not a function
+              // Toggle detail view for this row in Tabulator 6.x style
+              const row = cell.getRow();
               
-              // Toggle icon
-              const icon = cell.getElement().querySelector('i');
-              if (icon) {
-                if (icon.classList.contains('fa-plus-circle')) {
-                  icon.classList.replace('fa-plus-circle', 'fa-minus-circle');
-                } else {
-                  icon.classList.replace('fa-minus-circle', 'fa-plus-circle');
-                }
+              if (row.isDetailOpen()) {
+                row.closeDetail();
+                cell.getElement().querySelector('i').classList.replace('fa-minus-circle', 'fa-plus-circle');
+              } else {
+                row.openDetail();
+                cell.getElement().querySelector('i').classList.replace('fa-plus-circle', 'fa-minus-circle');
               }
               
               e.stopPropagation();
@@ -649,14 +648,14 @@
           } else {
             row.getElement().classList.add("paper-unread");
           }
-        },
-        rowExpanded: function(row) {
-          // Adjust the detail row when expanded
-          const detailEl = row.getElement().nextElementSibling;
-          if (detailEl && detailEl.classList.contains("tabulator-row-detail")) {
-            detailEl.style.backgroundColor = "#f9f9f9";
-          }
         }
+        // rowExpanded: function(row) {
+        //   // Adjust the detail row when expanded
+        //   const detailEl = row.getElement().nextElementSibling;
+        //   if (detailEl && detailEl.classList.contains("tabulator-row-detail")) {
+        //     detailEl.style.backgroundColor = "#f9f9f9";
+        //   }
+        // }
       });
       
       // Remove loading message
