@@ -576,20 +576,17 @@
           {
             title: "Published", 
             field: "published", 
-            widthGrow: 1,
-            headerFilter: "date"
+            widthGrow: 1
           },
           {
             title: "First Read", 
             field: "firstRead", 
-            widthGrow: 1,
-            headerFilter: "date"
+            widthGrow: 1
           },
           {
             title: "Last Read", 
             field: "lastRead", 
-            widthGrow: 1,
-            headerFilter: "date"
+            widthGrow: 1
           },
           {
             title: "Reading Time", 
@@ -597,8 +594,7 @@
             widthGrow: 1,
             formatter: function(cell) {
               return cell.getRow().getData().readingTime;
-            },
-            headerFilter: "number"
+            }
           },
           {
             title: "Days", 
@@ -608,15 +604,13 @@
               const value = cell.getValue();
               if (value === 0) return "None";
               return value === 1 ? "1 day" : `${value} days`;
-            },
-            headerFilter: "number"
+            }
           },
           {
             title: "Tags", 
             field: "tags", 
             widthGrow: 2,
-            formatter: formatTags,
-            headerFilter: "input"
+            formatter: formatTags
           }
         ],
         rowFormatter: function(row) {
