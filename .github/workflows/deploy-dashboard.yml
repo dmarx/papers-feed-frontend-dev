@@ -1,0 +1,51 @@
+# .github/workflows/deploy-dashboard.yml
+# Workflow to deploy dashboard to GitHub Pages
+
+name: Deploy Dashboard to GitHub Pages
+
+on:
+  push:
+    branches: [ main, frontend-simple ]
+  pull_request:
+    branches: [ main ]
+  # Allow manual trigger from the Actions tab
+  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+
+      - name: Prepare deployment
+        run: |
+          cp data/papers/papers.json frontend-new/papers.json
+      
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+          # Upload the entire repository
+          path: './frontend-new'
+      
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
