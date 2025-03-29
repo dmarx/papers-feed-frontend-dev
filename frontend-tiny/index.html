@@ -106,8 +106,9 @@
         authors: paper.authors,
         abstract: paper.abstract,
         published: formatDate(paper.published_date),
-        lastRead: paper.last_read ? formatDate(paper.last_read) : 'Never',
-        readingTime: formatReadingTime(paper.total_reading_time_seconds),
+        lastVisited: paper.last_visited,
+        lastRead: paper.last_read,
+        readingTime: paper.total_reading_time_seconds,
         tags: paper.arxiv_tags,
         url: paper.url
       }));
