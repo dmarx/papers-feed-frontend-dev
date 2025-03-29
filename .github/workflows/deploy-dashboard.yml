@@ -35,7 +35,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch_depth: 1
+          fetch-depth: 1
       
       - name: Setup Pages
         uses: actions/configure-pages@v3
@@ -43,7 +43,7 @@ jobs:
       - name: Prepare deployment
         run: |
           #cp data/papers/papers.json frontend-tiny/papers.json
-          cp data/papers/gh-store-snapshot.json frontend-tiny/papers.json
+          cp data/papers/gh-store-snapshot.json frontend-tiny/gh-store-snapshot.json
 
       # - name: Deploy to GitHub Pages
       #   uses: peaceiris/actions-gh-pages@v3
