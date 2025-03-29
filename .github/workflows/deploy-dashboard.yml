@@ -5,7 +5,7 @@ name: Deploy Dashboard to GitHub Pages
 
 on:
   push:
-    branches: [ main, frontend-simple, frontend-simple-snapshot]
+    branches: [ main, frontend-simple, frontend-simple-snapshot, frontend-snapshot-tabulator ]
   pull_request:
     branches: [ main ]
   # Allow manual trigger from the Actions tab
