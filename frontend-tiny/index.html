@@ -480,7 +480,9 @@
       
       for (const paperKey of paperKeys) {
         const paperId = paperKey.split(":")[1];
-        const paperData = objects[paperKey].data;
+        const paperRaw = objects[paperKey];
+        const paperData = paperRaw.data;
+        const paperMeta = paperRaw.meta;
         const interactionKey = `interactions:${paperId}`;
         const interactionData = objects[interactionKey] ? objects[interactionKey].data : null;
         
@@ -518,12 +520,13 @@
         
         // Create the row data
         result.push({
-          id: paperId,
+          id: paperData.paper_id || paperData.arxivId,
           title: paperData.title,
           authors: paperData.authors,
           abstract: paperData.abstract,
           published: paperData.published_date ? formatDate(paperData.published_date) : '',
-          lastRead: lastReadDate ? formatDate(lastReadDate) : 'Never',
+          firstRead: formatDate(paperMeta.created_at),
+          lastRead: lastReadDate ? formatDate(lastReadDate) : formatDate(paperMeta.updated_at),
           readingTime: formatReadingTime(totalReadingTime),
           readingTimeSeconds: totalReadingTime,
           interactionDays: uniqueInteractionDays,
@@ -584,6 +587,12 @@
           {
             title: "Published", 
             field: "published", 
+            widthGrow: 1,
+            headerFilter: "input"
+          },
+          {
+            title: "First Read", 
+            field: "firstRead", 
             widthGrow: 1,
             headerFilter: "input"
           },
