@@ -106,8 +106,8 @@
         authors: paper.authors,
         abstract: paper.abstract,
         published: formatDate(paper.published_date),
-        lastVisited: paper.last_visited,
-        lastRead: paper.last_read,
+        lastVisited: formatDate(paper.last_visited),
+        lastRead: formatDate(paper.last_read),
         readingTime: paper.total_reading_time_seconds,
         tags: paper.arxiv_tags,
         url: paper.url
@@ -142,8 +142,8 @@
             sortable: true
           },
           { 
-            field: 'lastRead', 
-            headerName: 'Last Read', 
+            field: 'lastVisited', 
+            headerName: 'Last Visited', 
             flex: 1,
             minWidth: 120,
             filter: 'agDateColumnFilter',
@@ -163,7 +163,6 @@
                 return 0;
               }
             },
-            rowGroup: true,
             sortable: true
           },
           { 
