@@ -24,7 +24,6 @@ import {
   IconFileText, 
   IconDotsVertical 
 } from '@tabler/icons-react';
-import { formatDistanceToNow } from 'date-fns';
 import { Paper } from '../types';
 import classes from './PapersTable.module.css';
 
@@ -94,7 +93,16 @@ const formatRelativeTime = (dateString: string): string => {
       })}`;
     }
     
-    return formatDistanceToNow(date, { addSuffix: true });
+    // Simple relative time implementation
+    const diffTime = today.getTime() - date.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 7) return `${diffDays} days ago`;
+    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+    if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
+    return `${Math.floor(diffDays / 365)} years ago`;
   } catch (e) {
     return 'Unknown';
   }
