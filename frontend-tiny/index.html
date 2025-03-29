@@ -547,20 +547,13 @@
         layout: "fitColumns",
         responsiveLayout: "collapse",
         pagination: "local",
-        paginationSize: 25,
-        paginationSizeSelector: [10, 25, 50, 100],
+        paginationSize: 100,
+        paginationSizeSelector: [10, 25, 50, 100, 500, 1000],
         movableColumns: true,
         initialSort: [
           {column: "lastRead", dir: "desc"}
         ],
         columns: [
-          // {
-          //   formatter: "rowSelection", 
-          //   titleFormatter: "rowSelection", 
-          //   hozAlign: "center", 
-          //   headerSort: false, 
-          //   width: 30
-          // },
           {
             title: "", 
             field: "_expand",
@@ -570,7 +563,7 @@
               return '<i class="fas fa-plus-circle"></i>';
             },
             cellClick: function(e, cell) {
-              cell.getRow().toggleDetail();
+              cell.getRow().toggleDetail(); // Uncaught TypeError: cell.getRow(...).toggleDetail is not a function
               
               // Toggle icon
               const icon = cell.getElement().querySelector('i');
@@ -607,19 +600,19 @@
             title: "Published", 
             field: "published", 
             widthGrow: 1,
-            headerFilter: "input"
+            headerFilter: "date"
           },
           {
             title: "First Read", 
             field: "firstRead", 
             widthGrow: 1,
-            headerFilter: "input"
+            headerFilter: "date"
           },
           {
             title: "Last Read", 
             field: "lastRead", 
             widthGrow: 1,
-            headerFilter: "input"
+            headerFilter: "date"
           },
           {
             title: "Reading Time", 
@@ -628,7 +621,7 @@
             formatter: function(cell) {
               return cell.getRow().getData().readingTime;
             },
-            headerFilter: "input"
+            headerFilter: "number"
           },
           {
             title: "Days", 
