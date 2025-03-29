@@ -118,27 +118,6 @@
       const gridOptions = {
         columnDefs: [
           { 
-            field: 'title', 
-            headerName: 'Title', 
-            minWidth: 300,
-            flex: 2,
-            filter: true,
-            sortable: true,
-            resizable: true,
-            cellRenderer: params => {
-              return `<a href="${params.data.url}" target="_blank">${params.value}</a>`;
-            }
-          },
-          { 
-            field: 'authors', 
-            headerName: 'Authors', 
-            flex: 1,
-            minWidth: 200,
-            filter: true,
-            sortable: true,
-            resizable: true
-          },
-          { 
             field: 'published', 
             headerName: 'Published', 
             flex: 1,
@@ -184,6 +163,27 @@
               }
             },
             sortable: true
+          },
+          { 
+            field: 'title', 
+            headerName: 'Title', 
+            minWidth: 300,
+            flex: 2,
+            filter: true,
+            sortable: true,
+            resizable: true,
+            cellRenderer: params => {
+              return `<a href="${params.data.url}" target="_blank">${params.value}</a>`;
+            }
+          },
+          { 
+            field: 'authors', 
+            headerName: 'Authors', 
+            flex: 1,
+            minWidth: 200,
+            filter: true,
+            sortable: true,
+            resizable: true
           },
           { 
             field: 'readingTime', 
