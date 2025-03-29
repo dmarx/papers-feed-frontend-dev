@@ -43,6 +43,8 @@
       flex: 1;
       width: 100%;
       overflow: hidden;
+      position: relative; /* Important for sidebar positioning */
+      display: flex; /* Support sidebar layout */
     }
     .tag {
       display: inline-block;
@@ -100,6 +102,16 @@
       border-bottom: 1px solid #eee;
       padding-bottom: 5px;
     }
+    /* Fix for the sidebar layout */
+    .ag-root-wrapper {
+      display: flex;
+      flex-direction: row;
+      overflow: hidden;
+      width: 100%;
+    }
+    .ag-side-bar {
+      min-width: 250px !important;
+    }
   </style>
 </head>
 <body>
@@ -115,83 +127,7 @@
   </div>
 
   <script>
-    // Detail cell renderer for master-detail view
-    function detailCellRenderer(params) {
-      const data = params.data;
-      
-      // Format the date nicely
-      function formatDateFull(dateString) {
-        if (!dateString) return 'N/A';
-        const date = new Date(dateString);
-        return date.toLocaleString();
-      }
-      
-      // Format interactions for display
-      function formatInteractions(interactions) {
-        if (!interactions || interactions.length === 0) {
-          return '<p>No interactions recorded</p>';
-        }
-        
-        return `
-          <h4>Reading Sessions (${interactions.length})</h4>
-          <table class="detail-table">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Duration</th>
-                <th>Session ID</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${interactions.map(interaction => `
-                <tr>
-                  <td>${formatDateFull(interaction.timestamp)}</td>
-                  <td>${interaction.data.duration_seconds} seconds</td>
-                  <td>${interaction.data.session_id}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        `;
-      }
-      
-      // Create the detail view content
-      return `
-        <div class="detail-panel" style="padding: 20px; overflow: auto; height: 100%;">
-          <h3>${data.title}</h3>
-          
-          <div style="display: grid; grid-template-columns: 1fr 1fr; grid-gap: 20px; margin-bottom: 20px;">
-            <div>
-              <h4>Paper Details</h4>
-              <table class="detail-table" style="width: 100%;">
-                <tr><th>ID:</th><td>${data.id}</td></tr>
-                <tr><th>Authors:</th><td>${data.authors}</td></tr>
-                <tr><th>Published:</th><td>${data.published}</td></tr>
-                <tr><th>URL:</th><td><a href="${data.url}" target="_blank">${data.url}</a></td></tr>
-                <tr><th>Last Read:</th><td>${data.lastRead}</td></tr>
-                <tr><th>Reading Time:</th><td>${data.readingTime}</td></tr>
-                <tr><th>Interaction Days:</th><td>${data.interactionDays === 1 ? '1 day' : data.interactionDays + ' days'}</td></tr>
-                <tr>
-                  <th>Tags:</th>
-                  <td>${data.tags.map(tag => `<span class="tag">${tag}</span>`).join(' ')}</td>
-                </tr>
-              </table>
-            </div>
-            
-            <div>
-              <h4>Abstract</h4>
-              <div style="background: #f8f8f8; padding: 15px; border-radius: 4px; max-height: 200px; overflow-y: auto;">
-                ${data.abstract.replace(/\n/g, '<br>')}
-              </div>
-            </div>
-          </div>
-          
-          <div>
-            ${formatInteractions(data.rawInteractionData)}
-          </div>
-        </div>
-      `;
-    }
+
   
     // Format reading time from seconds to minutes
     function formatReadingTime(seconds) {
@@ -292,7 +228,7 @@
           authors: paperData.authors,
           abstract: paperData.abstract,
           published: paperData.published_date ? new Date(paperData.published_date).toISOString().split('T')[0] : '',
-          lastRead: lastReadDate ? lastReadDate.toISOString().split('T')[0] : '-',
+          lastRead: lastReadDate ? lastReadDate.toISOString().split('T')[0] : 'Never',
           readingTime: formatReadingTime(totalReadingTime),
           readingTimeSeconds: totalReadingTime,
           interactionDays: uniqueInteractionDays,
@@ -310,38 +246,115 @@
     // Configure and initialize the AG Grid
     function setupGrid(rowData) {
       const gridOptions = {
-        // Enable master detail
+        // Enable master detail with proper configuration
         masterDetail: true,
-        detailRowHeight: 300,
-        detailCellRenderer: detailCellRenderer,
-        sideBar: true,
+        detailCellRenderer: 'agDetailCellRenderer',
+        detailRowHeight: 400,
+        detailRowAutoHeight: true,
+        // Detail grid configuration
+        detailCellRendererParams: {
+          // Detail grid definition
+          detailGridOptions: {
+            columnDefs: [
+              { field: 'field', headerName: 'Property', minWidth: 150 },
+              { field: 'value', headerName: 'Value', minWidth: 350, 
+                cellRenderer: params => {
+                  if (Array.isArray(params.value)) {
+                    return params.value.map(tag => `<span class="tag">${tag}</span>`).join(' ');
+                  } else if (typeof params.value === 'string' && params.data.field === 'abstract') {
+                    return `<div style="white-space: pre-line;">${params.value}</div>`;
+                  } else if (typeof params.value === 'object' && params.value !== null) {
+                    return JSON.stringify(params.value, null, 2);
+                  }
+                  return params.value;
+                }
+              }
+            ],
+            defaultColDef: {
+              flex: 1,
+              sortable: true,
+              resizable: true
+            },
+            domLayout: 'autoHeight'
+          },
+          // Convert paper data to rows for detail grid
+          getDetailRowData: (params) => {
+            // Create rows for all paper properties
+            const paperDetails = [];
+            const paper = params.data;
+            
+            // Add basic paper details
+            paperDetails.push({ field: 'id', value: paper.id });
+            paperDetails.push({ field: 'title', value: paper.title });
+            paperDetails.push({ field: 'authors', value: paper.authors });
+            paperDetails.push({ field: 'abstract', value: paper.abstract });
+            paperDetails.push({ field: 'published', value: paper.published });
+            paperDetails.push({ field: 'url', value: `<a href="${paper.url}" target="_blank">${paper.url}</a>` });
+            paperDetails.push({ field: 'tags', value: paper.tags });
+            
+            // Add reading stats
+            paperDetails.push({ field: 'lastRead', value: paper.lastRead });
+            paperDetails.push({ field: 'readingTime', value: paper.readingTime });
+            paperDetails.push({ field: 'interactionDays', value: paper.interactionDays === 1 ? '1 day' : `${paper.interactionDays} days` });
+            
+            // Add reading sessions if available
+            if (paper.rawInteractionData && paper.rawInteractionData.length > 0) {
+              paperDetails.push({ field: 'readingSessions', value: paper.rawInteractionData.map(session => {
+                return {
+                  timestamp: new Date(session.timestamp).toLocaleString(),
+                  duration: `${session.data.duration_seconds} seconds`,
+                  sessionId: session.data.session_id
+                };
+              })});
+            }
+            
+            params.successCallback(paperDetails);
+          },
+          // Refresh detail when master data changes
+          refreshStrategy: 'rows'
+        },
         // Adding sidebar for filters
-        // sideBar:  {
-        //   toolPanels: [
-        //     {
-        //       id: 'columns',
-        //       labelDefault: 'Columns',
-        //       labelKey: 'columns',
-        //       iconKey: 'columns',
-        //       toolPanel: 'agColumnsToolPanel',
-        //       minWidth: 225,
-        //       maxWidth: 225,
-        //       width: 225
-        //     },
-        //     {
-        //       id: 'filters',
-        //       labelDefault: 'Filters',
-        //       labelKey: 'filters',
-        //       iconKey: 'filter',
-        //       toolPanel: 'agFiltersToolPanel',
-        //       minWidth: 180,
-        //       maxWidth: 400,
-        //       width: 250
-        //     }
-        //   ],
-        //   defaultToolPanel: ''
-        // },
+        sideBar: {
+          toolPanels: [
+            {
+              id: 'columns',
+              labelDefault: 'Columns',
+              labelKey: 'columns',
+              iconKey: 'columns',
+              toolPanel: 'agColumnsToolPanel',
+              minWidth: 225,
+              maxWidth: 225,
+              width: 225
+            },
+            {
+              id: 'filters',
+              labelDefault: 'Filters',
+              labelKey: 'filters',
+              iconKey: 'filter',
+              toolPanel: 'agFiltersToolPanel',
+              minWidth: 180,
+              maxWidth: 250,
+              width: 250
+            }
+          ],
+          position: 'right',
+          defaultToolPanel: 'filters',
+          hiddenByDefault: false
+        },
         columnDefs: [
+          {
+            headerName: '',
+            field: 'detail_button',
+            maxWidth: 70,
+            cellRenderer: 'agGroupCellRenderer',
+            cellRendererParams: {
+              suppressCount: true,
+              suppressDoubleClickExpand: true,
+              innerRenderer: params => {
+                return `<span>${params.value}</span>`;
+              }
+            }
+          },
           {
             field: 'title', 
             headerName: 'Title', 
@@ -498,7 +511,7 @@
     }
 
     // Fetch the JSON data file
-    fetch('gh-store-snapshot.json')
+    fetch('data.json')
       .then(response => {
         if (!response.ok) {
           throw new Error('Failed to load data.json');
